@@ -1,5 +1,6 @@
 location: .
 sources:
+  # main repos
     - repo: https://github.com/KyleM73/orbit.git
       name: orbit
       rev: main
@@ -12,16 +13,17 @@ sources:
       name: hcrl_robots
       rev: main
       type: git
+    - repo: https://github.com/KyleM73/hcrl_orbit.git
+      name: hcrl_orbit
+      rev: main
+      type: git
+    # repos linked in orbit
     - repo: https://github.com/KyleM73/hcrl_robots.git
       name: orbit/source/extensions/hcrl_orbit/hcrl_orbit/assets/hcrl_robots
       rev: main
       type: git
     - repo: https://github.com/KyleM73/hcrl_orbit.git
       name: orbit/source/extensions/hcrl_orbit
-      rev: main
-      type: git
-    - repo: https://github.com/KyleM73/hcrl_orbit.git
-      name: hcrl_orbit
       rev: main
       type: git
 default_group: ''
