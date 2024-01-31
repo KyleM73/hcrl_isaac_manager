@@ -22,6 +22,10 @@ sources:
       name: orbit/source/extensions/hcrl_orbit/hcrl_orbit/assets/hcrl_robots
       rev: main
       type: git
+    - repo: https://github.com/KyleM73/hcrl_robots.git
+      name: hcrl_orbit/hcrl_orbit/assets/hcrl_robots
+      rev: main
+      type: git
     - repo: https://github.com/KyleM73/hcrl_orbit.git
       name: orbit/source/extensions/hcrl_orbit
       rev: main
