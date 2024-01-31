@@ -9,21 +9,9 @@ sources:
       name: rsl_rl
       rev: main
       type: git
-    - repo: https://github.com/KyleM73/hcrl_robots.git
-      name: hcrl_robots
-      rev: main
-      type: git
-    - repo: https://github.com/KyleM73/hcrl_orbit.git
-      name: hcrl_orbit
-      rev: main
-      type: git
     # repos linked in orbit
     - repo: https://github.com/KyleM73/hcrl_robots.git
       name: orbit/source/extensions/hcrl_orbit/hcrl_orbit/assets/hcrl_robots
-      rev: main
-      type: git
-    - repo: https://github.com/KyleM73/hcrl_robots.git
-      name: hcrl_orbit/hcrl_orbit/assets/hcrl_robots
       rev: main
       type: git
     - repo: https://github.com/KyleM73/hcrl_orbit.git
