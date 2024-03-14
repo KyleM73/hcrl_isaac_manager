@@ -1,3 +1,5 @@
-orbit/
-rsl_rl/
-scripts/*.sh
+**orbit/
+**rsl_rl/
+**hcrl_orbit/
+**artifacts/
+scripts/wandb.sh
