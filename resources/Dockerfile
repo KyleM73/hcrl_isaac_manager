@@ -95,6 +95,6 @@ RUN git config --global --add safe.directory /workspace/orbit
 RUN git config --global --add safe.directory /workspace/hcrl_orbit
 RUN git config --global --add safe.directory /workspace/rsl_rl
 
-# make working directory as the orbit directory
+# make working directory as the workspace directory
 # this is the default directory when the container is run
-WORKDIR ${ORBIT_PATH}
+WORKDIR ${WORKSPACE_PATH}
