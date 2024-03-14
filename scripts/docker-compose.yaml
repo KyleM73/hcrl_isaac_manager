@@ -10,7 +10,7 @@ services:
         - ISAACSIM_PATH=${DOCKER_ISAACSIM_PATH}
         - DOCKER_USER_HOME=${DOCKER_USER_HOME}
     image: orbit
-    container_name: orbit
+    container_name: orbit-${gpu_idx:-0}
     env_file:
       - .env
       # We set DOCKER_ISAACSIM_PATH and then forward it to ISAACSIM_PATH within
@@ -72,7 +72,7 @@ services:
         source: ../resources/hcrl_orbit
         target: /workspace/hcrl_orbit
       - type: bind
-        source: ../resourcesrsl_rl
+        source: ../resources/rsl_rl
         target: /workspace/rsl_rl
         # The effect of these volumes is twofold:
         # 1. Prevent root-owned files from flooding the _build and logs dir
