@@ -69,8 +69,8 @@ services:
         source: ../resources/orbit
         target: /workspace/orbit
       - type: bind
-        source: ../resources/hcrl_orbit
-        target: /workspace/hcrl_orbit
+        source: ../resources/orbit.hcrl
+        target: /workspace/orbit.hcrl
       - type: bind
         source: ../resources/rsl_rl
         target: /workspace/rsl_rl
