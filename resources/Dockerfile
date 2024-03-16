@@ -87,12 +87,12 @@ COPY rsl_rl ${WORKSPACE_PATH}/rsl_rl
 RUN cd ${WORKSPACE_PATH}/rsl_rl && ${ISAACSIM_PATH}/python.sh -m pip install -e .
 
 # hcrl_orbit
-COPY hcrl_orbit ${WORKSPACE_PATH}/hcrl_orbit
-RUN cd ${WORKSPACE_PATH}/hcrl_orbit && ${ISAACSIM_PATH}/python.sh -m pip install -e .
+COPY orbit.hcrl ${WORKSPACE_PATH}/orbit.hcrl
+RUN cd ${WORKSPACE_PATH}/orbit.hcrl && ${ISAACSIM_PATH}/python.sh -m pip install -e .
 
 # git mark safe
 RUN git config --global --add safe.directory /workspace/orbit
-RUN git config --global --add safe.directory /workspace/hcrl_orbit
+RUN git config --global --add safe.directory /workspace/orbit.hcrl
 RUN git config --global --add safe.directory /workspace/rsl_rl
 
 # make working directory as the workspace directory
