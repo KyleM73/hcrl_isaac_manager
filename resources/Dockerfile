@@ -86,7 +86,7 @@ RUN ${ISAACSIM_PATH}/python.sh -m pip install --upgrade pip
 COPY rsl_rl ${WORKSPACE_PATH}/rsl_rl
 RUN cd ${WORKSPACE_PATH}/rsl_rl && ${ISAACSIM_PATH}/python.sh -m pip install -e .
 
-# hcrl_orbit
+# orbit.hcrl
 COPY orbit.hcrl ${WORKSPACE_PATH}/orbit.hcrl
 RUN cd ${WORKSPACE_PATH}/orbit.hcrl && ${ISAACSIM_PATH}/python.sh -m pip install -e .
 
