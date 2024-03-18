@@ -12,7 +12,7 @@ sources:
     # repos linked in orbit
     - repo: https://github.com/KyleM73/orbit.hcrl.git
       name: orbit.hcrl
-      rev: main
+      rev: feature/pnc
       type: git
     - repo: https://github.com/KyleM73/hcrl_robots.git
       name: orbit.hcrl/resources/hcrl_robots
