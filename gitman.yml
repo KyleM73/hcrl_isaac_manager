@@ -1,21 +1,21 @@
 location: resources
 sources:
   # main repos
-    - repo: https://github.com/NVIDIA-Omniverse/orbit.git
-      name: orbit
+    - repo: https://github.com/isaac-sim/IsaacLab.git
+      name: isaac.lab
       rev: main
       type: git
     - repo: https://github.com/KyleM73/rsl_rl.git
       name: rsl_rl
       rev: main
       type: git
-    # repos linked in orbit
-    - repo: https://github.com/KyleM73/orbit.hcrl.git
-      name: orbit.hcrl
+    # repos linked in IsaacLab
+    - repo: https://github.com/KyleM73/isaac.lab.hcrl.git
+      name: isaac.lab.hcrl
       rev: main
       type: git
     - repo: https://github.com/KyleM73/hcrl_robots.git
-      name: orbit.hcrl/resources/hcrl_robots
+      name: isaac.lab.hcrl/resources/hcrl_robots
       rev: main
       type: git
 default_group: ''
