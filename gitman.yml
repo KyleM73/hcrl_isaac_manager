@@ -5,13 +5,13 @@ sources:
       name: IsaacLab
       rev: main
       type: git
-    - repo: https://github.com/KyleM73/rsl_rl.git
-      name: rsl_rl
-      rev: main
-      type: git
-    # repos linked in IsaacLab
+   # repos linked in IsaacLab
     - repo: https://github.com/KyleM73/isaaclab.hcrl.git
       name: IsaacLab/source/extensions/isaaclab.hcrl
+      rev: main
+      type: git
+    - repo: https://github.com/KyleM73/rsl_rl.git
+      name: IsaacLab/source/extensions/isaaclab.hcrl/isaaclab/hcrl/frameworks/rsl_rl
       rev: main
       type: git
     - repo: https://github.com/KyleM73/hcrl_robots.git
