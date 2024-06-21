@@ -1,5 +1,3 @@
 **IsaacLab/
-**rsl_rl/
-**isaaclab.hcrl/
 **artifacts/
-scripts/wandb.sh
+scripts/wandb*

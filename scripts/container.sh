@@ -3,7 +3,12 @@
 # make the cwd the pwd
 cd "${0%/*}"
 # export wandb api keys
-source ./wandb.sh
+if ! grep -Fxq "# export wandb api keys" ../resources/IsaacLab/docker/Dockerfile.base
+then
+    echo "" >> ../resources/IsaacLab/docker/Dockerfile.base
+    echo "# export wandb api keys" >> ../resources/IsaacLab/docker/Dockerfile.base
+    cat ./wandb >> ../resources/IsaacLab/docker/Dockerfile.base
+fi
 # take git ownership of the hcrl extension
 sudo chown -R "${USER:-$(id -un)}" ../resources/IsaacLab/source/extensions/isaaclab.hcrl/
 # turn off x11 mode
