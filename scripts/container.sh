@@ -15,4 +15,4 @@ sudo chown -R "${USER:-$(id -un)}" ../resources/IsaacLab/source/extensions/isaac
 ssh_mode='"0"'
 sed -i "s/^__ISAACLAB_X11_FORWARDING_ENABLED.*/__ISAACLAB_X11_FORWARDING_ENABLED: ${ssh_mode}/" ../resources/IsaacLab/docker/.container.yaml
 # start the container
-../resources/IsaacLab/docker/container.sh $@
+python3 "../resources/IsaacLab/docker/container.py" "${@:1}"
