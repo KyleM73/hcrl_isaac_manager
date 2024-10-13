@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # make the cwd the pwd
-cd "${0%/*}"
+cd "$(dirname "$0")"
 # export wandb api keys
 wandb_env_file="$(pwd)/.env.wandb"
 # take git ownership of the hcrl extension
