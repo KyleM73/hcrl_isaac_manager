@@ -1,4 +1,5 @@
 **IsaacLab/
 **artifacts/
 scripts/.env.wandb*
+scripts/cluster/.env.cluster
 .vscode/
