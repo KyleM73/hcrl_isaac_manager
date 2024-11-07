@@ -195,11 +195,13 @@ case $command in
         # Check if singularity image exists on the remote host
         # don't check to reduce number of ssh calls
         # check_singularity_image_exists isaac-lab-$profile
-        # make sure target directory exists
-        # ssh $CLUSTER_LOGIN "mkdir -p $CLUSTER_ISAACLAB_DIR" # use mkpath flag in rsync instead, may not work on older systems
-        # Sync Isaac Lab code
         echo "[INFO] Syncing Isaac Lab code..."
-        rsync -rh  --mkpath --exclude="*.git*" --filter=':- .dockerignore'  /$SCRIPT_DIR/../.. $CLUSTER_LOGIN:$CLUSTER_ISAACLAB_DIR
+        # make sure target directory exists
+        # ssh $CLUSTER_LOGIN "mkdir -p $CLUSTER_ISAACLAB_DIR"
+        # use mkpath flag in rsync instead, may not work on older systems
+        # use --rsync_path instead of --mkpath (rsync>=3.2.3 for mkpath)
+        # Sync Isaac Lab code
+        rsync -rh --rsync-path="mkdir -p $CLUSTER_ISAACLAB_DIR && rsync" --exclude="*.git*" --filter=':- .dockerignore'  /$SCRIPT_DIR/../.. $CLUSTER_LOGIN:$CLUSTER_ISAACLAB_DIR
         # execute job script
         echo "[INFO] Executing job script..."
         # check whether the second argument is a profile or a job argument
