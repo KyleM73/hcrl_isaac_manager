@@ -36,6 +36,10 @@ REMOVE_CODE_COPY_AFTER_JOB=false
 # Python executable within Isaac Lab directory to run with the submitted job
 CLUSTER_PYTHON_EXECUTABLE=source/extensions/isaaclab.hcrl/scripts/server_train.py
 ```
+Replace email in `scripts/cluster/submit_job_slurm.sh`:
+```bash
+#SBATCH --mail-user=<email>
+```
 
 ## Gitman setup
 ```bash
