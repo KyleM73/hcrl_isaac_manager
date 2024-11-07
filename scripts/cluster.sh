@@ -9,4 +9,5 @@ cp cluster/cluster_interface.sh  ../resources/IsaacLab/docker/cluster/cluster_in
 cp cluster/run_singularity.sh  ../resources/IsaacLab/docker/cluster/run_singularity.sh
 cp cluster/submit_job_slurm.sh  ../resources/IsaacLab/docker/cluster/submit_job_slurm.sh
 
-../resources/IsaacLab/docker/cluster/cluster_interface.sh "${@:1}"
+cd ../resources/IsaacLab/docker/cluster
+./cluster_interface.sh "${@:1}"
