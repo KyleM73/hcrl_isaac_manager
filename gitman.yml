@@ -10,10 +10,9 @@ sources:
       name: IsaacLab/source/extensions/isaaclab.hcrl
       rev: main
       type: git
-    # unused for Spot
-    # - repo: https://github.com/KyleM73/hcrl_robots.git
-    #   name: IsaacLab/source/extensions/isaaclab.hcrl/resources/hcrl_robots
-    #   rev: main
-    #   type: git
+    - repo: https://github.com/KyleM73/hcrl_robots.git
+      name: IsaacLab/source/extensions/isaaclab.hcrl/resources/hcrl_robots
+      rev: main
+      type: git
 default_group: ''
 groups:
