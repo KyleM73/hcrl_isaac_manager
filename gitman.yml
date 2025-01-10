@@ -1,7 +1,8 @@
 location: resources
 sources:
   # main repos
-    - repo: https://github.com/isaac-sim/IsaacLab.git
+    # - repo: https://github.com/isaac-sim/IsaacLab.git
+    - repo: https://github.com/KyleM73/IsaacLab.git
       name: IsaacLab
       rev: main
       type: git
