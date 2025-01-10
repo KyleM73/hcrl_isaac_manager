@@ -2,6 +2,8 @@
 
 # make the cwd the pwd
 cd "$(dirname "$0")"
+# mark hcrl git directories as safe
+git config --global --add safe.directory ../resources/IsaacLab/source/extensions/isaaclab.hcrl
 # export wandb api keys
 wandb_env_file="$(pwd)/.env.wandb"
 cat $wandb_env_file >> ../resources/IsaacLab/docker/.env.base
