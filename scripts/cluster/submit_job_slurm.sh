@@ -13,6 +13,7 @@ cat <<EOT > job.sh
 #SBATCH -p gpu-a100-small
 #SBATCH -N 1
 #SBATCH -n 1
+#SBATCH -A ${CLUSTER_ACCOUNT:?Error: CLUSTER_ACCOUNT is not set}
 #SBATCH --cpus-per-task=32
 #SBATCH --time=24:00:00
 #SBATCH --mem-per-cpu=0
