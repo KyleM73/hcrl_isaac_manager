@@ -175,6 +175,12 @@ case $command in
         # send image to cluster
         scp $SCRIPT_DIR/exports/isaac-lab-$profile.tar $CLUSTER_LOGIN:$CLUSTER_SIF_PATH/isaac-lab-$profile.tar
         ;;
+    push_current)
+        # make sure target directory exists
+        ssh $CLUSTER_LOGIN "mkdir -p $CLUSTER_SIF_PATH"
+        # send image to cluster
+        scp $SCRIPT_DIR/exports/isaac-lab-$profile.tar $CLUSTER_LOGIN:$CLUSTER_SIF_PATH/isaac-lab-$profile.tar
+        ;;
     job)
         if [ $# -ge 1 ]; then
             passed_profile=$1

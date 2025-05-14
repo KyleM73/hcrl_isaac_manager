@@ -56,5 +56,6 @@ See Isaaclab instructions to setup Isaac Sim and the docker interface, the Isaac
 ## Cluster
 ```bash
 sudo scripts/cluster.sh push # first time only
+sudo scripts/cluster.sh push_current # pushes existing sif image -- use if push times out on ssh
 sudo scripts/cluster.sh job --task Spot-Baseline-v0
 ```
