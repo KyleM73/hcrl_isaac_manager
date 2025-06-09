@@ -8,7 +8,7 @@ sources:
    # repos linked in IsaacLab
     - repo: git@github.com:KyleM73/hcrl_isaaclab.git
       name: IsaacLab/source/hcrl_isaaclab
-      rev: crab_joint_penalties
+      rev: ssti
       type: git
     - repo: git@github.com:KyleM73/hcrl_robots.git
       name: IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots
