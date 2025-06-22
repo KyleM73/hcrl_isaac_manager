@@ -2,16 +2,16 @@ location: resources
 sources:
   # main repos
     # - repo: https://github.com/isaac-sim/IsaacLab.git
-    - repo: https://github.com/KyleM73/IsaacLab.git
+    - repo: git@github.com:KyleM73/IsaacLab.git
       name: IsaacLab
       rev: main
       type: git
    # repos linked in IsaacLab
-    - repo: https://github.com/KyleM73/hcrl_isaaclab.git
+    - repo: git@github.com:KyleM73/hcrl_isaaclab.git
       name: IsaacLab/source/hcrl_isaaclab
       rev: main
       type: git
-    - repo: https://github.com/KyleM73/hcrl_robots.git
+    - repo: git@github.com:KyleM73/hcrl_robots.git
       name: IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots
       rev: main
       type: git
