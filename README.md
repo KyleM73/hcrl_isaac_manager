@@ -11,7 +11,7 @@ Cluster only:
 touch scripts/cluster/.env.cluster
 ```
 
-Fill in the following:
+Fill in the following (use the full paths from env variables `$SCRATCH` and `$HOME` in TACC):
 ```bash
 ###
 # Cluster specific settings
@@ -21,15 +21,15 @@ Fill in the following:
 # Currently supports PBS and SLURM
 CLUSTER_JOB_SCHEDULER=SLURM
 # Docker cache dir for Isaac Sim (has to end on docker-isaac-sim)
-# e.g. /cluster/scratch/$USER/docker-isaac-sim
+# e.g. $SCRATCH/docker-isaac-sim
 CLUSTER_ISAAC_SIM_CACHE_DIR=/some/path/on/cluster/docker-isaac-sim
 # Isaac Lab directory on the cluster (has to end on isaaclab)
-# e.g. /cluster/home/$USER/isaaclab
+# e.g. $HOME/isaaclab
 CLUSTER_ISAACLAB_DIR=/some/path/on/cluster/isaaclab
 # Cluster login
 CLUSTER_LOGIN=username@cluster_ip
 # Cluster scratch directory to store the SIF file
-# e.g. /cluster/scratch/$USER
+# e.g. $SCRATCH
 CLUSTER_SIF_PATH=/some/path/on/cluster/
 # Remove the temporary isaaclab code copy after the job is done
 REMOVE_CODE_COPY_AFTER_JOB=false
@@ -39,6 +39,13 @@ CLUSTER_PYTHON_EXECUTABLE=source/hcrl_isaaclab/scripts/server_train.py
 Replace email in `scripts/cluster/submit_job_slurm.sh`:
 ```bash
 #SBATCH --mail-user=<email>
+```
+
+### Multiple TACC profiles on a single machine
+
+You can store the above profiles in `.env.cluster.<name>` and `.env.wandb.<name>`. When running the cluster script, set `PROFILE` to the desired user, i.e.
+```bash
+PROFILE=<name> scripts/cluster.sh job --task <task_name>
 ```
 
 ## Gitman setup

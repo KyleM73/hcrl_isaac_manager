@@ -5,10 +5,11 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 HCRL_ISAACLAB_DIR="$( realpath "${SCRIPT_DIR}/../resources/IsaacLab/source/hcrl_isaaclab" )"
 OUTPUTS_DIR="${HCRL_ISAACLAB_DIR}/outputs"
 
-profile="isaaclab"
+user="emily"
+profile="env_isaaclab"
 task="Crab-Baseline-v0"  # TODO: make this an optional argument
 
-RUN_SCRIPT_COMMAND="mkdir -p ${OUTPUTS_DIR} && $HCRL_ISAACLAB_DIR/scripts/log_videos_async.sh ${SCRIPT_DIR}/.env.wandb ${profile} --task ${task} &>> ${OUTPUTS_DIR}/log_videos_async.log &"
+RUN_SCRIPT_COMMAND="mkdir -p ${OUTPUTS_DIR} && $HCRL_ISAACLAB_DIR/scripts/log_videos_async.sh ${SCRIPT_DIR}/.env.wandb.${user} ${profile} --task ${task} &> ${OUTPUTS_DIR}/log_videos_async.log"
 CRON_COMMAND="$( printf "SHELL=/bin/bash\n*/30 * * * * ${RUN_SCRIPT_COMMAND}" )"
 
 VIEW_CRONJOBS_MSG="You can view your current jobs with \`crontab -l\`."
