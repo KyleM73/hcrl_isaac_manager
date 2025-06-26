@@ -15,5 +15,9 @@ sources:
       name: IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots
       rev: main
       type: git
+    - repo: git@github.com:KyleM73/robot_rl.git
+      name: IsaacLab/source/robot_rl
+      rev: main
+      type: git
 default_group: ''
 groups:
