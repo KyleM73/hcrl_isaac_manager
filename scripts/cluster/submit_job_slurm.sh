@@ -13,12 +13,11 @@ cat <<EOT > job.sh
 #SBATCH -p gpu-a100-small
 #SBATCH -N 1
 #SBATCH -n 1
-#SBATCH -A ${CLUSTER_ACCOUNT:?Error: CLUSTER_ACCOUNT is not set}
 #SBATCH --cpus-per-task=32
 #SBATCH --time=24:00:00
 #SBATCH --mem-per-cpu=0
 #SBATCH --mail-type=ALL
-#SBATCH --mail-user=kylem@utexas.edu
+#SBATCH --mail-user=<email>
 #SBATCH --job-name="training-$(date +"%Y-%m-%dT%H_%M")"
 
 # Pass the container profile first to run_singularity.sh, then all arguments intended for the executed script
