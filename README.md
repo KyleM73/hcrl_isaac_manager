@@ -34,7 +34,7 @@ CLUSTER_SIF_PATH=/some/path/on/cluster/
 # Remove the temporary isaaclab code copy after the job is done
 REMOVE_CODE_COPY_AFTER_JOB=false
 # Python executable within Isaac Lab directory to run with the submitted job
-CLUSTER_PYTHON_EXECUTABLE=source/hcrl_isaaclab/scripts/server_train.py
+CLUSTER_PYTHON_EXECUTABLE="source/hcrl_isaaclab/scripts/train.py --server"
 ```
 Replace email in `scripts/cluster/submit_job_slurm.sh`:
 ```bash
