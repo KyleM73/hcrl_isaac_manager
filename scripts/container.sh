@@ -11,7 +11,10 @@ else
     wandb_env_file="$(pwd)/.env.wandb.${PROFILE}"
 fi
 dockerfile="$(pwd)/Dockerfile.base"
-cat $wandb_env_file >> ../resources/IsaacLab/docker/.env.base
+target_env_file="../resources/IsaacLab/docker/.env.base"
+if ! grep -Fxq -f "$wandb_env_file" "$target_env_file"; then
+    cat "$wandb_env_file" >> "$target_env_file"
+fi
 cat $dockerfile > ../resources/IsaacLab/docker/Dockerfile.base
 # take git ownership of the hcrl extension
 sudo chown -R "${USER:-$(id -un)}" ../resources/IsaacLab/source/hcrl_isaaclab/
