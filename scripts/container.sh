@@ -5,7 +5,11 @@ cd "$(dirname "$0")"
 # mark hcrl git directories as safe
 git config --global --add safe.directory ../resources/IsaacLab/source/hcrl_isaaclab/
 # export wandb api keys
-wandb_env_file="$(pwd)/.env.wandb"
+if [[ -z "${PROFILE}" ]]; then
+    wandb_env_file="$(pwd)/.env.wandb"
+else
+    wandb_env_file="$(pwd)/.env.wandb.${PROFILE}"
+fi
 dockerfile="$(pwd)/Dockerfile.base"
 cat $wandb_env_file >> ../resources/IsaacLab/docker/.env.base
 cat $dockerfile > ../resources/IsaacLab/docker/Dockerfile.base
