@@ -5,39 +5,79 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 HCRL_ISAACLAB_DIR="$( realpath "${SCRIPT_DIR}/../resources/IsaacLab/source/hcrl_isaaclab" )"
 OUTPUTS_DIR="${HCRL_ISAACLAB_DIR}/outputs"
 
-profile="isaaclab"
-task="Crab-Baseline-v0"  # TODO: make this an optional argument
-
-RUN_SCRIPT_COMMAND="mkdir -p ${OUTPUTS_DIR} && $HCRL_ISAACLAB_DIR/scripts/log_videos_async.sh ${SCRIPT_DIR}/.env.wandb ${profile} --task ${task} &>> ${OUTPUTS_DIR}/log_videos_async.log &"
-CRON_COMMAND="$( printf "SHELL=/bin/bash\n*/30 * * * * ${RUN_SCRIPT_COMMAND}" )"
-
-VIEW_CRONJOBS_MSG="You can view your current jobs with \`crontab -l\`."
+print_help() {
+    echo "Usage: $0 command --task task_name [--help]"
+    echo
+    echo "Arguments:"
+    echo "  command                 'add' to add a listener for the specified task. 'remove' to remove an existing listener for the task"
+    echo "  --task task_name        The task to track on W&B"
+    echo "  --profile profile_name  The conda env to use for video logging. Defaults to 'env_isaaclab'"
+    echo "  --user user_name        The user whose wandb info should be used for logging (i.e. '.env.wandb.user_name'). Defaults to None (uses '.env.wandb')"
+    echo "  -h, --help              Show this help message and exit"
+}
 
 # Parse options
-while getopts ":h" opt; do
-    case ${opt} in
-        h )
-            help
+while [[ "$#" -gt 0 ]]; do
+    case $1 in
+        --task)
+            task="$2"
+            shift
+            ;;
+        --profile)
+            profile="$2"
+            shift
+            ;;
+        --user)
+            user="$2"
+            shift
+            ;;
+        -h|--help)
+            print_help
             exit 0
             ;;
+        -*)
+            echo "Invalid option: $1" >&2
+            print_help
+            exit 1
+            ;;
+        *)
+            command=$1
+            ;;
         \? )
-            echo "Invalid option: -$OPTARG" >&2
-            help
+            echo "Invalid argument: $1" >&2
+            print_help
             exit 1
             ;;
     esac
+    shift
 done
-shift $((OPTIND -1))
 
 # Check for command
-if [ $# -lt 1 ]; then
-    echo "Error: Command is required." >&2
-    help
+if [ -z "$command" ]; then
+    echo "Error: command is required." >&2
+    print_help
+    exit 1
+elif [ -z "$task" ]; then
+    echo "Error: task is required." >&2
+    print_help
     exit 1
 fi
 
-command=$1
-shift
+if [ -z "$profile" ]; then
+    profile="env_isaaclab"
+fi
+
+if [ -z "$user" ]; then
+    wandb_file=".env.wandb"
+else
+    wandb_file=".env.wandb.${user}"
+fi
+
+
+RUN_SCRIPT_COMMAND="mkdir -p ${OUTPUTS_DIR} && $HCRL_ISAACLAB_DIR/scripts/utils/log_videos_async.sh ${SCRIPT_DIR}/${wandb_file} ${profile} --task ${task} &> ${OUTPUTS_DIR}/${task,,}_video_logging.log"
+CRON_COMMAND="$( printf "SHELL=/bin/bash\n*/30 * * * * ${RUN_SCRIPT_COMMAND}" )"
+
+VIEW_CRONJOBS_MSG="You can view your current jobs with \`crontab -l\`."
 
 case $command in
     add)
@@ -58,7 +98,7 @@ case $command in
         crontab -l > crontmp
         if grep -Fq "$CRON_COMMAND" crontmp ; then
             echo "[INFO] Removing cron job..."
-            grep -Fv "$CRON_COMMAND" crontmp > cronout
+            grep -Fxv -f <(printf '%s\n' "$CRON_COMMAND") crontmp > cronout
             crontab cronout
             echo "[INFO] Successfully removed cron job. $VIEW_CRONJOBS_MSG"
             rm crontmp cronout
@@ -70,7 +110,7 @@ case $command in
         ;;
     *)
         echo "Error: Invalid command: $command" >&2
-        help
+        print_help
         exit 1
         ;;
 esac
