@@ -19,5 +19,9 @@ sources:
       name: IsaacLab/source/robot_rl
       rev: main
       type: git
+    - repo: git@github.com:KyleM73/cusadi.git
+      name: IsaacLab/source/cusadi
+      rev: feature/isaac_extension
+      type: git
 default_group: ''
 groups:
