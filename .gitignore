@@ -1,5 +1,6 @@
 **IsaacLab/
 **artifacts/
-scripts/.env.wandb*
+scripts/.env.wandb
 scripts/cluster/.env.cluster
+scripts/cluster/submit_job_slurm.sh
 .vscode/
