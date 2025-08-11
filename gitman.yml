@@ -1,7 +1,18 @@
 location: resources
 sources:
   # main repos
-    - repo: git@github.com:isaac-sim/IsaacLab.git
+    - repo: git@github.com:isaac-sim/IsaacSim.git
+      name: isaacsim
+      rev: main
+      type: git
+      scripts:
+        - git lfs install
+        - git lfs pull
+        - ./build.sh -q
+      links:
+        - {source: _build/linux-x86_64/release, target: resources/IsaacLab/_isaac_sim}
+    # - repo: https://github.com/isaac-sim/IsaacLab.git
+    - repo: git@github.com:KyleM73/IsaacLab.git
       name: IsaacLab
       rev: main
       type: git
@@ -21,6 +32,10 @@ sources:
     - repo: git@github.com:Creampelt/hcrl_crab_robot.git
       name: IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots/crab
       rev: main
+      type: git
+    - repo: git@github.com:KyleM73/cusadi.git
+      name: IsaacLab/source/cusadi
+      rev: feature/isaac_extension
       type: git
 default_group: ''
 groups:
