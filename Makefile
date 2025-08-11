@@ -3,7 +3,7 @@ SHELL := /bin/bash
 # Package manager selection - can be 'conda' or 'uv'
 PACKAGE_MANAGER ?= conda
 
-.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv
+.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv cluster
 
 all: deps gitman clean setup
 
@@ -50,7 +50,7 @@ setup-conda:
 	export CONDA_NO_PLUGINS=true; \
 	source $$HOME/miniconda3/etc/profile.d/conda.sh; \
 	cd resources/IsaacLab && ./isaaclab.sh -c ilab; \
-	conda run -n ilab ./isaaclab.sh -i rsl_rl ;\
+	conda run -n ilab ./isaaclab.sh -i rsl_rl; \
 
 setup-uv:
 	uv venv --clear ilab && \
@@ -58,10 +58,29 @@ setup-uv:
 	export CONDA_PREFIX=$$(pwd)/ilab && \
 	uv pip install --upgrade pip && \
 	cd resources/IsaacLab && \
-	./isaaclab.sh -i rsl_rl
+	./isaaclab.sh -i rsl_rl; \
 
 conda:
 	$(MAKE) PACKAGE_MANAGER=conda all
 
 uv:
 	$(MAKE) PACKAGE_MANAGER=uv all
+
+cluster:
+	@read -p "W&B Username: " WANDB_USERNAME; \
+	read -p "W&B API Key: " WANDB_API_KEY; \
+	echo "Writing wandb env file..."; \
+	WANDB_USERNAME=$$WANDB_USERNAME WANDB_API_KEY=$$WANDB_API_KEY envsubst < scripts/cluster/tools/.env.wandb.template > scripts/.env.wandb
+
+	@read -p "Home Directory (`echo '$$HOME'` from TACC machine): " HOME; \
+	read -p "Scratch Directory (`echo '$$SCRATCH'` from TACC machine): " SCRATCH; \
+	case "$$HOME" in /*) ;; *) HOME="/$$HOME" ;; esac; \
+	case "$$SCRATCH" in /*) ;; *) SCRATCH="/$$SCRATCH" ;; esac; \
+	echo "Writing cluster env file..."; \
+	HOME=$$HOME SCRATCH=$$SCRATCH envsubst < scripts/cluster/tools/.env.cluster.template > scripts/cluster/.env.cluster
+
+	@read -p "Email (for job notifications): " EMAIL; \
+	echo "Writing SLURM job config file..."; \
+	EMAIL=$$EMAIL envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh
+
+	@echo "Successfully configured cluster setup."
