@@ -3,3 +3,5 @@
 scripts/.env.wandb*
 scripts/cluster/.env.cluster
 .vscode/
+**.venv/
+**ilab/
