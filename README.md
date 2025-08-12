@@ -123,7 +123,7 @@ make conda
 
 ### `clean` Target
 - **Conda**: Deactivates and removes `ilab` environment
-- **UV**: Removes `.venv` directory
+- **UV**: Removes `ilab` directory
 
 ### `setup` Target
 - **Conda**: Creates `ilab` environment and installs IsaacLab
