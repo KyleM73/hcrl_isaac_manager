@@ -9,7 +9,7 @@ all: deps gitman clean setup
 
 deps:
 	sudo apt-get update && sudo apt-get upgrade -y
-	sudo apt-get install -y build-essential
+	sudo apt-get install -y cmake build-essential
 	sudo apt autoremove -y
 	@if ! command -v gcc >/dev/null 2>&1 || [ $$(gcc -dumpversion | cut -d. -f1) -lt 11 ]; then \
 		sudo apt-get install -y gcc-11 g++-11; \
