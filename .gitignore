@@ -6,3 +6,4 @@ scripts/cluster/submit_job_slurm.sh
 .vscode/
 **.venv/
 **ilab/
+outputs/

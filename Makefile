@@ -1,7 +1,11 @@
 SHELL := /bin/bash
+.ONESHELL:
 
 # Package manager selection - can be 'conda' or 'uv'
 PACKAGE_MANAGER ?= conda
+VENV_NAME ?= ilab
+ISAACSIM_SETUP := resources/IsaacLab/_isaac_sim/setup_conda_env.sh
+PYTHON_PATH := resources/isaacsim/_build/linux-x86_64/release/kit/python/bin/python3
 
 .PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv cluster
 
@@ -32,16 +36,16 @@ clean: clean-$(PACKAGE_MANAGER)
 clean-conda:
 	export CONDA_NO_PLUGINS=true; \
 	source $$HOME/miniconda3/etc/profile.d/conda.sh; \
-	if [ "$$CONDA_DEFAULT_ENV" = "ilab" ]; then \
+	if [ "$$CONDA_DEFAULT_ENV" = "$(VENV_NAME)" ]; then \
 		conda deactivate; \
 	fi; \
-	if conda info --envs | grep -qE '^\s*ilab\s'; then \
-		conda remove -y --name ilab --all; \
+	if conda info --envs | grep -qE '^\s*$(VENV_NAME)\s'; then \
+		conda remove -y --name $(VENV_NAME) --all; \
 	fi; \
 
 clean-uv:
-	@if [ -d "resources/IsaacLab/ilab" ]; then \
-		rm -rf resources/IsaacLab/ilab; \
+	@if [ -d "resources/IsaacLab/$(VENV_NAME)" ]; then \
+		rm -rf resources/IsaacLab/$(VENV_NAME); \
 	fi
 
 setup: setup-$(PACKAGE_MANAGER)
@@ -49,16 +53,44 @@ setup: setup-$(PACKAGE_MANAGER)
 setup-conda:
 	export CONDA_NO_PLUGINS=true; \
 	source $$HOME/miniconda3/etc/profile.d/conda.sh; \
-	cd resources/IsaacLab && ./isaaclab.sh -c ilab; \
-	conda run -n ilab ./isaaclab.sh -i rsl_rl; \
+	cd resources/IsaacLab && ./isaaclab.sh -c $(VENV_NAME); \
+	conda run -n $(VENV_NAME) ./isaaclab.sh -i rsl_rl; \
 
 setup-uv:
-	uv venv --clear ilab && \
-	source ilab/bin/activate && \
-	export CONDA_PREFIX=$$(pwd)/ilab && \
-	uv pip install --upgrade pip && \
-	cd resources/IsaacLab && \
-	./isaaclab.sh -i rsl_rl; \
+	uv venv --clear --python $(PYTHON_PATH) resources/IsaacLab/$(VENV_NAME)
+	cat >> resources/IsaacLab/$(VENV_NAME)/bin/activate <<-'EOF'
+	if [[ "$${BASH_SOURCE[0]}" == /* ]]; then
+	    ACTIVATE_SCRIPT_PATH="$${BASH_SOURCE[0]}"
+	else
+	    ACTIVATE_SCRIPT_PATH="$$(pwd)/$${BASH_SOURCE[0]}"
+	fi
+	ACTIVATE_SCRIPT_DIR="$$(dirname "$$(readlink -f "$$ACTIVATE_SCRIPT_PATH")")"
+	ISAACLAB_ROOT="$$ACTIVATE_SCRIPT_DIR/../.."
+	ISAACLAB_ROOT="$$(readlink -f "$$ISAACLAB_ROOT")"
+	. "$$ISAACLAB_ROOT/_isaac_sim/setup_conda_env.sh"
+	export ISAACLAB_PATH="$$ISAACLAB_ROOT"
+	export CONDA_PREFIX="$$VIRTUAL_ENV"
+	EOF
+	cat > resources/IsaacLab/$(VENV_NAME)/bin/isaaclab <<-'EOF'
+	#!/usr/bin/env bash
+	set -e
+	if [[ "$$0" == /* ]]; then
+	    SCRIPT_PATH="$$0"
+	else
+	    SCRIPT_PATH="$$(pwd)/$$0"
+	fi
+	SCRIPT_DIR="$$(dirname "$$(readlink -f "$$SCRIPT_PATH")")"
+	ISAACLAB_SCRIPT="$$SCRIPT_DIR/../../isaaclab.sh"
+	ISAACLAB_SCRIPT="$$(readlink -f "$$ISAACLAB_SCRIPT")"
+	exec "$$ISAACLAB_SCRIPT" "$$@"
+	EOF
+	chmod +x resources/IsaacLab/$(VENV_NAME)/bin/isaaclab
+	source resources/IsaacLab/$(VENV_NAME)/bin/activate \
+	&& hash -r \
+	&& export CONDA_PREFIX="$$VIRTUAL_ENV" \
+	&& uv pip install --upgrade pip \
+	&& python -m pip install --upgrade pip \
+	&& isaaclab -i rsl_rl
 
 conda:
 	$(MAKE) PACKAGE_MANAGER=conda all
