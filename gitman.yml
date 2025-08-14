@@ -1,6 +1,15 @@
 location: resources
 sources:
   # main repos
+    - repo: git@github.com:isaac-sim/IsaacSim.git
+      name: isaacsim
+      rev: main
+      type: git
+      scripts:
+        - git lfs install
+        - git lfs pull
+        - ./build.sh -q
+        - ln -snf "$(realpath _build/linux-x86_64/release)" ../IsaacLab/_isaac_sim
     # - repo: https://github.com/isaac-sim/IsaacLab.git
     - repo: git@github.com:KyleM73/IsaacLab.git
       name: IsaacLab

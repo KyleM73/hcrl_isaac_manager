@@ -11,7 +11,7 @@ print_help() {
     echo "Arguments:"
     echo "  command                 'add' to add a listener for the specified task. 'remove' to remove an existing listener for the task"
     echo "  --task task_name        The task to track on W&B"
-    echo "  --profile profile_name  The conda env to use for video logging. Defaults to 'env_isaaclab'"
+    echo "  --profile profile_name  The conda env to use for video logging. Defaults to 'ilab'"
     echo "  --user user_name        The user whose wandb info should be used for logging (i.e. '.env.wandb.user_name'). Defaults to None (uses '.env.wandb')"
     echo "  -h, --help              Show this help message and exit"
 }
@@ -64,7 +64,7 @@ elif [ -z "$task" ]; then
 fi
 
 if [ -z "$profile" ]; then
-    profile="env_isaaclab"
+    profile="ilab"
 fi
 
 if [ -z "$user" ]; then
