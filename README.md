@@ -1,14 +1,11 @@
-# Setup
+# Quickstart
 
-General:
-```
+```bash
 make
+make cluster  # if deploying to cluster
 ```
 
-Cluster:
-```
-make cluster
-```
+See [Makefile Usage](#makefile-usage) for detailed instructions.
 
 # Usage
 
@@ -76,17 +73,19 @@ source ilab/bin/activate
 - **`deps`** - Install system dependencies and package managers
 - **`gitman`** - Update git submodules
 - **`clean`** - Clean up environments (uses selected package manager)
-- **`setup`** - Setup development environment (uses selected package manager)
+- **`setup`** - Set up development environment (uses selected package manager)
+- **`cluster`** - Set up files necessary for cluster deployment
 
 ### Package Manager Specific Targets
 - **`clean-conda`** - Remove conda environment
 - **`clean-uv`** - Remove UV virtual environment
-- **`setup-conda`** - Setup conda environment
-- **`setup-uv`** - Setup UV virtual environment
+- **`setup-conda`** - Set up conda environment
+- **`setup-uv`** - Set up UV virtual environment
 
 ### Convenience Targets
 - **`conda`** - Force use of conda for all operations
 - **`uv`** - Force use of UV for all operations
+- **`wandb`** - Set up W&B environment file (included in main setup)
 
 ## Package Manager Selection
 
@@ -128,6 +127,10 @@ make conda
 ### `setup` Target
 - **Conda**: Creates `ilab` environment and installs IsaacLab
 - **UV**: Creates virtual environment and installs package in editable mode
+- Writes `.env.wandb` file
+
+### `cluster` Target
+- Writes `.env.cluster` and `submit_job_slurm.sh` files for cluster deployment on TACC Lonestar6
 
 ## Examples
 
