@@ -20,6 +20,9 @@ deps:
 		sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 200; \
 		sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 200; \
 	fi
+	@if ! command -v git-lfs >/dev/null 2>&1; then \
+		sudo apt install -y git-lfs; \
+	fi
 	@if [ "$$PACKAGE_MANAGER" = "uv" ]; then \
 		if ! command -v uv >/dev/null 2>&1; then \
 			curl -LsSf https://astral.sh/uv/install.sh | sh; \
