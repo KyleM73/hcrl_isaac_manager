@@ -56,6 +56,8 @@ setup: setup-$(PACKAGE_MANAGER)
 setup-conda:
 	export CONDA_NO_PLUGINS=true; \
 	source $$HOME/miniconda3/etc/profile.d/conda.sh; \
+	cp scripts/isaacsim/setup_conda_env.sh resources/IsaacLab/_isaac_sim/setup_conda_env.sh; \
+	cp scripts/isaacsim/setup_python_env.sh resources/IsaacLab/_isaac_sim/setup_python_env.sh; \
 	cd resources/IsaacLab && ./isaaclab.sh -c $(VENV_NAME); \
 	conda run -n $(VENV_NAME) ./isaaclab.sh -i rsl_rl; \
 
