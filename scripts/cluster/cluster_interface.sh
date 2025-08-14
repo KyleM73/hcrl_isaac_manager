@@ -166,7 +166,6 @@ case $command in
         # NOTE: we create the singularity image as non-root user to allow for more flexibility. If this causes
         # issues, remove the --fakeroot flag and open an issue on the IsaacLab repository.
         cd /$SCRIPT_DIR/exports
-        # NOTE: removed --fakeroot flag after --sandbox
         APPTAINER_NOHTTPS=1 apptainer build --sandbox --fakeroot isaac-lab-$profile.sif docker-daemon://isaac-lab-$profile:latest
         # tar image (faster to send single file as opposed to directory with many files)
         tar -cvf /$SCRIPT_DIR/exports/isaac-lab-$profile.tar isaac-lab-$profile.sif
