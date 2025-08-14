@@ -7,7 +7,7 @@ VENV_NAME ?= ilab
 ISAACSIM_SETUP := resources/IsaacLab/_isaac_sim/setup_conda_env.sh
 PYTHON_PATH := resources/isaacsim/_build/linux-x86_64/release/kit/python/bin/python3
 
-.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv cluster
+.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv wandb cluster
 
 all: deps gitman clean setup
 
@@ -60,6 +60,9 @@ setup-conda:
 	cp scripts/isaacsim/setup_python_env.sh resources/IsaacLab/_isaac_sim/setup_python_env.sh; \
 	cd resources/IsaacLab && ./isaaclab.sh -c $(VENV_NAME); \
 	conda run -n $(VENV_NAME) ./isaaclab.sh -i rsl_rl; \
+	@if [ ! -f "scripts/.env.wandb" ]; then \
+		$(MAKE) wandb; \
+	fi
 
 setup-uv:
 	uv venv --clear --python $(PYTHON_PATH) resources/IsaacLab/$(VENV_NAME)
@@ -96,6 +99,9 @@ setup-uv:
 	&& uv pip install --upgrade pip \
 	&& python -m pip install --upgrade pip \
 	&& isaaclab -i rsl_rl
+	@if [ ! -f "scripts/.env.wandb" ]; then \
+		$(MAKE) wandb; \
+	fi
 
 conda:
 	$(MAKE) PACKAGE_MANAGER=conda all
@@ -103,12 +109,13 @@ conda:
 uv:
 	$(MAKE) PACKAGE_MANAGER=uv all
 
-cluster:
+wandb:
 	@read -p "W&B Username: " WANDB_USERNAME; \
 	read -p "W&B API Key: " WANDB_API_KEY; \
 	echo "Writing wandb env file..."; \
 	WANDB_USERNAME=$$WANDB_USERNAME WANDB_API_KEY=$$WANDB_API_KEY envsubst < scripts/cluster/tools/.env.wandb.template > scripts/.env.wandb
 
+cluster:
 	@read -p "Home Directory (`echo '$$HOME'` from TACC machine): " HOME; \
 	read -p "Scratch Directory (`echo '$$SCRATCH'` from TACC machine): " SCRATCH; \
 	case "$$HOME" in /*) ;; *) HOME="/$$HOME" ;; esac; \
