@@ -60,7 +60,7 @@ setup-conda:
 	cp scripts/isaacsim/setup_python_env.sh resources/IsaacLab/_isaac_sim/setup_python_env.sh; \
 	cd resources/IsaacLab && ./isaaclab.sh -c $(VENV_NAME); \
 	conda run -n $(VENV_NAME) ./isaaclab.sh -i rsl_rl; \
-	@if [ ! -f "scripts/.env.wandb" ]; then \
+	if [ ! -f "scripts/.env.wandb" ]; then \
 		$(MAKE) wandb; \
 	fi
 
@@ -93,13 +93,13 @@ setup-uv:
 	exec "$$ISAACLAB_SCRIPT" "$$@"
 	EOF
 	chmod +x resources/IsaacLab/$(VENV_NAME)/bin/isaaclab
-	source resources/IsaacLab/$(VENV_NAME)/bin/activate \
-	&& hash -r \
-	&& export CONDA_PREFIX="$$VIRTUAL_ENV" \
-	&& uv pip install --upgrade pip \
-	&& python -m pip install --upgrade pip \
-	&& isaaclab -i rsl_rl
-	@if [ ! -f "scripts/.env.wandb" ]; then \
+	source resources/IsaacLab/$(VENV_NAME)/bin/activate && \
+	hash -r && \
+	export CONDA_PREFIX="$$VIRTUAL_ENV" && \
+	uv pip install --upgrade pip && \
+	python -m pip install --upgrade pip && \
+	isaaclab -i rsl_rl; \
+	if [ ! -f "scripts/.env.wandb" ]; then \
 		$(MAKE) wandb; \
 	fi
 
