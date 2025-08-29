@@ -132,7 +132,7 @@ cluster:
 		echo "[INFO] Writing cluster env file..."; \
 		HOME=$$HOME SCRATCH=$$SCRATCH CLUSTER_USERNAME=$$CLUSTER_USERNAME envsubst < scripts/cluster/tools/.env.cluster.template > scripts/cluster/.env.cluster; \
 	fi;
-	@if [ ! -f "$(TOPDIR)/scripts/cluster/.env.cluster" ]; then \
+	@if [ ! -f "$(TOPDIR)/scripts/cluster/submit_job_slurm.sh" ]; then \
 		read -p "Email (for job notifications): " EMAIL; \
 		echo "[INFO] Writing SLURM job config file..."; \
 		EMAIL=$$EMAIL envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh; \
