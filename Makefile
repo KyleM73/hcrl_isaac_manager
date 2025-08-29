@@ -78,7 +78,7 @@ setup-conda:
 	cp scripts/isaacsim/setup_conda_env.sh resources/IsaacLab/_isaac_sim/setup_conda_env.sh; \
 	cp scripts/isaacsim/setup_python_env.sh resources/IsaacLab/_isaac_sim/setup_python_env.sh; \
 	cd resources/IsaacLab && ./isaaclab.sh -c $(VENV_NAME); \
-	conda run -n $(VENV_NAME) ./isaaclab.sh -i rsl_rl;sudo apt-get update
+	conda run -n $(VENV_NAME) ./isaaclab.sh -i rsl_rl;
 
 setup-uv:
 	uv venv --clear --python $(PYTHON_PATH) resources/IsaacLab/$(VENV_NAME)
@@ -99,7 +99,7 @@ setup-uv:
 	#!/usr/bin/env bash
 	set -e
 	if [[ "$$0" == /* ]]; then
-	    SCRIPT_PATH="$$0"sudo apt-get update
+	    SCRIPT_PATH="$$0"
 	else
 	    SCRIPT_PATH="$$(pwd)/$$0"
 	fi
