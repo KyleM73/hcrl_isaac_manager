@@ -6,8 +6,13 @@ PACKAGE_MANAGER ?= conda
 VENV_NAME ?= ilab
 ISAACSIM_SETUP := resources/IsaacLab/_isaac_sim/setup_conda_env.sh
 PYTHON_PATH := resources/isaacsim/_build/linux-x86_64/release/kit/python/bin/python3
+RC_FILE := $$HOME/.bashrc
 
-.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv wandb cluster
+# other variables
+TOPDIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
+ENV_BASH := $(TOPDIR)/scripts/.env.bash
+
+.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv cluster
 
 all: deps gitman clean setup
 
@@ -35,6 +40,10 @@ gitman:
 	gitman update
 
 clean: clean-$(PACKAGE_MANAGER)
+	@if grep -Fxq "source $(ENV_BASH)" $(RC_FILE); then \
+		echo "[INFO] Removing .env.bash from $$( basename $(RC_FILE) )"
+		sed -i "\|source $(ENV_BASH)|d" $(RC_FILE); \
+	fi;
 
 clean-conda:
 	export CONDA_NO_PLUGINS=true; \
@@ -44,14 +53,24 @@ clean-conda:
 	fi; \
 	if conda info --envs | grep -qE '^\s*$(VENV_NAME)\s'; then \
 		conda remove -y --name $(VENV_NAME) --all; \
-	fi; \
+	fi;
 
 clean-uv:
 	@if [ -d "resources/IsaacLab/$(VENV_NAME)" ]; then \
 		rm -rf resources/IsaacLab/$(VENV_NAME); \
-	fi
+	fi;
 
 setup: setup-$(PACKAGE_MANAGER)
+	@if [ ! -f "$(TOPDIR)/scripts/.env.wandb" ]; then \
+		read -p "W&B Username: " WANDB_USERNAME; \
+		read -p "W&B API Key: " WANDB_API_KEY; \
+		echo "[INFO] Writing wandb env file..."; \
+		WANDB_USERNAME=$$WANDB_USERNAME WANDB_API_KEY=$$WANDB_API_KEY envsubst < scripts/cluster/tools/.env.wandb.template > scripts/.env.wandb; \
+	fi;
+	@if ! grep -Fxq "source $(ENV_BASH)" $(RC_FILE); then \
+		echo "[INFO] Adding .env.bash to $$( basename $(RC_FILE) )"; \
+		echo "source $(ENV_BASH)" >> $(RC_FILE); \
+	fi;
 
 setup-conda:
 	export CONDA_NO_PLUGINS=true; \
@@ -59,10 +78,7 @@ setup-conda:
 	cp scripts/isaacsim/setup_conda_env.sh resources/IsaacLab/_isaac_sim/setup_conda_env.sh; \
 	cp scripts/isaacsim/setup_python_env.sh resources/IsaacLab/_isaac_sim/setup_python_env.sh; \
 	cd resources/IsaacLab && ./isaaclab.sh -c $(VENV_NAME); \
-	conda run -n $(VENV_NAME) ./isaaclab.sh -i rsl_rl; \
-	if [ ! -f "scripts/.env.wandb" ]; then \
-		$(MAKE) wandb; \
-	fi
+	conda run -n $(VENV_NAME) ./isaaclab.sh -i rsl_rl;
 
 setup-uv:
 	uv venv --clear --python $(PYTHON_PATH) resources/IsaacLab/$(VENV_NAME)
@@ -98,10 +114,7 @@ setup-uv:
 	export CONDA_PREFIX="$$VIRTUAL_ENV" && \
 	uv pip install --upgrade pip && \
 	python -m pip install --upgrade pip && \
-	isaaclab -i rsl_rl; \
-	if [ ! -f "scripts/.env.wandb" ]; then \
-		$(MAKE) wandb; \
-	fi
+	isaaclab -i rsl_rl;
 
 conda:
 	$(MAKE) PACKAGE_MANAGER=conda all
@@ -109,22 +122,48 @@ conda:
 uv:
 	$(MAKE) PACKAGE_MANAGER=uv all
 
-wandb:
-	@read -p "W&B Username: " WANDB_USERNAME; \
-	read -p "W&B API Key: " WANDB_API_KEY; \
-	echo "Writing wandb env file..."; \
-	WANDB_USERNAME=$$WANDB_USERNAME WANDB_API_KEY=$$WANDB_API_KEY envsubst < scripts/cluster/tools/.env.wandb.template > scripts/.env.wandb
-
 cluster:
-	@read -p "Home Directory (`echo '$$HOME'` from TACC machine): " HOME; \
-	read -p "Scratch Directory (`echo '$$SCRATCH'` from TACC machine): " SCRATCH; \
-	case "$$HOME" in /*) ;; *) HOME="/$$HOME" ;; esac; \
-	case "$$SCRATCH" in /*) ;; *) SCRATCH="/$$SCRATCH" ;; esac; \
-	echo "Writing cluster env file..."; \
-	HOME=$$HOME SCRATCH=$$SCRATCH envsubst < scripts/cluster/tools/.env.cluster.template > scripts/cluster/.env.cluster
-
-	@read -p "Email (for job notifications): " EMAIL; \
-	echo "Writing SLURM job config file..."; \
-	EMAIL=$$EMAIL envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh
-
-	@echo "Successfully configured cluster setup."
+	@if [ ! -f "$(TOPDIR)/scripts/cluster/.env.cluster" ]; then \
+		read -p "TACC Username: " CLUSTER_USERNAME; \
+		read -p "Home Directory (`echo '$$HOME'` from TACC machine): " HOME; \
+		read -p "Scratch Directory (`echo '$$SCRATCH'` from TACC machine): " SCRATCH; \
+		case "$$HOME" in /*) ;; *) HOME="/$$HOME" ;; esac; \
+		case "$$SCRATCH" in /*) ;; *) SCRATCH="/$$SCRATCH" ;; esac; \
+		echo "[INFO] Writing cluster env file..."; \
+		HOME=$$HOME SCRATCH=$$SCRATCH CLUSTER_USERNAME=$$CLUSTER_USERNAME envsubst < scripts/cluster/tools/.env.cluster.template > scripts/cluster/.env.cluster; \
+	fi;
+	@if [ ! -f "$(TOPDIR)/scripts/cluster/submit_job_slurm.sh" ]; then \
+		read -p "Email (for job notifications): " EMAIL; \
+		echo "[INFO] Writing SLURM job config file..."; \
+		EMAIL=$$EMAIL envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh; \
+	fi;
+	if ! command -v docker >/dev/null 2>&1; then \
+		curl -fsSL https://get.docker.com -o get-docker.sh; \
+		sudo sh get-docker.sh; \
+		sudo groupadd docker; \
+		sudo usermode -aG docker $$USER; \
+		newgrp docker; \
+		echo "[INFO] Docker successfully installed and configured. Log out and back in for changes to take effect, then rerun `make cluster`."; \
+		exit 0; \
+	fi;
+	if ! command -v nvidia-container-toolkit >/dev/null 2>&1; then \
+		curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+			&& curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+			sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+			sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
+			&& \
+			sudo apt-get update; \
+		sudo apt-get install -y nvidia-container-toolkit; \
+		sudo systemctl restart docker; \
+		sudo nvidia-ctk runtime configure --runtime=docker; \
+		sudo systemctl restart docker; \
+	fi;
+	if ! command -v apptainer >/dev/null 2>&1; then \
+		sudo apt update; \
+		sudo apt install -y software-properties-common; \
+		sudo add-apt-repository -y ppa:apptainer/ppa; \
+		sudo apt update; \
+		sudo apt install -y apptainer; \
+	fi;
+	$(TOPDIR)/scripts/container.sh start;
+	$(TOPDIR)/scripts/cluster.sh push;
