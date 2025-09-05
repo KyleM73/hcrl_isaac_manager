@@ -56,7 +56,6 @@ cp -r $1 $JOB_TMPDIR
 dir_name=$(basename "$1")
 
 # copy container to the compute node
-# cp $CLUSTER_SIF_PATH/$2.sif $JOB_TMPDIR
 tar -xf $CLUSTER_SIF_PATH/$2.tar -C $JOB_TMPDIR
 
 # execute command in singularity container
