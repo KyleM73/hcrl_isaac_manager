@@ -61,7 +61,7 @@ tar -xf $CLUSTER_SIF_PATH/$2.tar -C $JOB_TMPDIR
 # execute command in singularity container
 # NOTE: ISAACLAB_PATH is normally set in `isaaclab.sh` but we directly call the isaac-sim python because we sync the entire
 # Isaac Lab directory to the compute node and remote the symbolic link to isaac-sim
-apptainer -d exec \
+apptainer exec \
     -B $JOB_TMPDIR/docker-isaac-sim/cache/kit:${DOCKER_ISAACSIM_ROOT_PATH}/kit/cache:rw \
     -B $JOB_TMPDIR/docker-isaac-sim/cache/ov:${DOCKER_USER_HOME}/.cache/ov:rw \
     -B $JOB_TMPDIR/docker-isaac-sim/cache/pip:${DOCKER_USER_HOME}/.cache/pip:rw \
