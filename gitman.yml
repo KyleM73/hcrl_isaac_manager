@@ -36,5 +36,22 @@ sources:
       name: IsaacLab/source/cusadi
       rev: feature/isaac_extension
       type: git
-default_group: ''
+default_group: 'development'
 groups:
+  development:
+    - isaacsim
+    - IsaacLab
+    - IsaacLab/source/hcrl_isaaclab
+    - IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots
+    - IsaacLab/source/robot_rl
+    - IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots/crab
+    - IsaacLab/source/cusadi
+  
+  release_v1_0_0:
+    - isaacsim@07d8dd47ea6b3c48b6b9d57fb6d8f7413914b40f
+    - IsaacLab@9d6321463067c541ce1a24531ff87f99a18fd8f7  # Get this from IsaacLab
+    - IsaacLab/source/hcrl_isaaclab@a538be8ad253996c0d5ad6761c0a28bac153ebc5
+    - IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots@075ee5c125f6256114ba0b6d206c79c7bc45d508
+    - IsaacLab/source/robot_rl@6d27a30df6f87cd64cda2deb0f98cbcfa62ef0da
+    - IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots/crab@a2973d8448791546b471ca00983f55674512c95b
+    - IsaacLab/source/cusadi@a6f18ff10e4f39a2af45a626272b1ac2e9bc69f6

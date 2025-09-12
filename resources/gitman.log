@@ -1,0 +1,18 @@
+2025-09-12 13:14:47
+/home/june/Research/hcrl_isaac_manager/resources/isaacsim: git@github.com:isaac-sim/IsaacSim.git @ 07d8dd47ea6b3c48b6b9d57fb6d8f7413914b40f
+/home/june/Research/hcrl_isaac_manager/resources/IsaacLab: git@github.com:KyleM73/IsaacLab.git @ <dirty>
+/home/june/Research/hcrl_isaac_manager/resources/IsaacLab/source/hcrl_isaaclab: git@github.com:KyleM73/hcrl_isaaclab.git @ a538be8ad253996c0d5ad6761c0a28bac153ebc5
+/home/june/Research/hcrl_isaac_manager/resources/IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots: git@github.com:KyleM73/hcrl_robots.git @ 075ee5c125f6256114ba0b6d206c79c7bc45d508
+/home/june/Research/hcrl_isaac_manager/resources/IsaacLab/source/robot_rl: git@github.com:KyleM73/robot_rl.git @ 6d27a30df6f87cd64cda2deb0f98cbcfa62ef0da
+/home/june/Research/hcrl_isaac_manager/resources/IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots/crab: git@github.com:Creampelt/hcrl_crab_robot.git @ a2973d8448791546b471ca00983f55674512c95b
+/home/june/Research/hcrl_isaac_manager/resources/IsaacLab/source/cusadi: git@github.com:KyleM73/cusadi.git @ a6f18ff10e4f39a2af45a626272b1ac2e9bc69f6
+
+2025-09-12 13:30:47
+/home/june/Research/hcrl_isaac_manager/resources/isaacsim: git@github.com:isaac-sim/IsaacSim.git @ 07d8dd47ea6b3c48b6b9d57fb6d8f7413914b40f
+/home/june/Research/hcrl_isaac_manager/resources/IsaacLab: git@github.com:KyleM73/IsaacLab.git @ <dirty>
+/home/june/Research/hcrl_isaac_manager/resources/IsaacLab/source/hcrl_isaaclab: git@github.com:KyleM73/hcrl_isaaclab.git @ a538be8ad253996c0d5ad6761c0a28bac153ebc5
+/home/june/Research/hcrl_isaac_manager/resources/IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots: git@github.com:KyleM73/hcrl_robots.git @ 075ee5c125f6256114ba0b6d206c79c7bc45d508
+/home/june/Research/hcrl_isaac_manager/resources/IsaacLab/source/robot_rl: git@github.com:KyleM73/robot_rl.git @ 6d27a30df6f87cd64cda2deb0f98cbcfa62ef0da
+/home/june/Research/hcrl_isaac_manager/resources/IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots/crab: git@github.com:Creampelt/hcrl_crab_robot.git @ a2973d8448791546b471ca00983f55674512c95b
+/home/june/Research/hcrl_isaac_manager/resources/IsaacLab/source/cusadi: git@github.com:KyleM73/cusadi.git @ a6f18ff10e4f39a2af45a626272b1ac2e9bc69f6
+
