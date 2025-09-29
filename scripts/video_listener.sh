@@ -9,11 +9,12 @@ print_help() {
     echo "Usage: $0 command --task task_name [--help]"
     echo
     echo "Arguments:"
-    echo "  command                 'add' to add a listener for the specified task. 'remove' to remove an existing listener for the task"
-    echo "  --task task_name        The task to track on W&B"
-    echo "  --profile profile_name  The conda env to use for video logging. Defaults to 'ilab'"
-    echo "  --user user_name        The user whose wandb info should be used for logging (i.e. '.env.wandb.user_name'). Defaults to None (uses '.env.wandb')"
-    echo "  -h, --help              Show this help message and exit"
+    echo "  command                         'add' to add a listener for the specified task. 'remove' to remove an existing listener for the task"
+    echo "  --task task_name                The IsaacLab environment to run during video recording"
+    echo "  --wandb_project project_path    The path (<entity>/<project>) for the W&B project to track"
+    echo "  --profile profile_name          The conda env to use for video logging. Defaults to 'ilab'"
+    echo "  --user user_name                The user whose wandb info should be used for logging (i.e. '.env.wandb.user_name'). Defaults to None (uses '.env.wandb')"
+    echo "  -h, --help                      Show this help message and exit"
 }
 
 # Parse options
@@ -21,6 +22,10 @@ while [[ "$#" -gt 0 ]]; do
     case $1 in
         --task)
             task="$2"
+            shift
+            ;;
+        --wandb_project)
+            wandb_project="$2"
             shift
             ;;
         --profile)
@@ -54,14 +59,17 @@ done
 
 # Check for command
 if [ -z "$command" ]; then
-    echo "Error: command is required." >&2
+    echo "[ERROR]: command is required." >&2
     print_help
     exit 1
 elif [ -z "$task" ]; then
-    echo "Error: task is required." >&2
+    echo "[ERROR]: task is required." >&2
     print_help
     exit 1
-fi
+elif [ -z "$wandb_project" ]; then
+    echo "[ERROR]: wandb project is required." >&2
+    print_help
+    exit 1
 
 if [ -z "$profile" ]; then
     profile="ilab"
@@ -74,7 +82,8 @@ else
 fi
 
 
-RUN_SCRIPT_COMMAND="mkdir -p ${OUTPUTS_DIR} && $HCRL_ISAACLAB_DIR/scripts/utils/log_videos_async.sh ${SCRIPT_DIR}/${wandb_file} ${profile} --task ${task} &> ${OUTPUTS_DIR}/${task,,}_video_logging.log"
+RUN_SCRIPT_COMMAND="mkdir -p ${OUTPUTS_DIR} && $HCRL_ISAACLAB_DIR/scripts/utils/log_videos_async.sh ${SCRIPT_DIR}/${wandb_file} ${profile} --task ${task} --wandb_project ${wandb_project} &> ${OUTPUTS_DIR}/${task,,}_video_logging.log"
+
 CRON_COMMAND="$( printf "SHELL=/bin/bash\n*/30 * * * * ${RUN_SCRIPT_COMMAND}" )"
 
 VIEW_CRONJOBS_MSG="You can view your current jobs with \`crontab -l\`."
