@@ -70,6 +70,7 @@ elif [ -z "$wandb_project" ]; then
     echo "[ERROR]: wandb project is required." >&2
     print_help
     exit 1
+fi
 
 if [ -z "$profile" ]; then
     profile="ilab"
