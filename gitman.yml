@@ -30,8 +30,11 @@ sources:
       type: git
     - repo: git@github.com:Creampelt/hcrl_crab_robot.git
       name: IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots/crab
-      rev: main
+      rev: feature/realistic-crab
       type: git
+      scripts:
+        - git lfs install
+        - git lfs pull
     - repo: git@github.com:KyleM73/cusadi.git
       name: IsaacLab/source/cusadi
       rev: feature/isaac_extension
