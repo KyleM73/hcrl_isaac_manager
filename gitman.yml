@@ -29,7 +29,7 @@ sources:
       rev: main
       type: git
     - repo: git@github.com:Creampelt/hcrl_crab_robot.git
-      name: IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots/crab
+      name: IsaacLab/source/hcrl_isaaclab/resources/ssti_robots
       rev: feature/realistic-crab
       type: git
       scripts:
