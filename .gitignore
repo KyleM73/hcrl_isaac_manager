@@ -3,6 +3,7 @@
 scripts/.env.wandb*
 scripts/cluster/.env.cluster*
 scripts/cluster/submit_job_slurm.sh
+scripts/cluster/submit_distributed_job_slurm.sh
 .vscode/
 **.venv/
 **ilab/

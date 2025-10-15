@@ -83,7 +83,8 @@ rsync -azPv $JOB_TMPDIR/docker-isaac-sim $CLUSTER_ISAAC_SIM_CACHE_DIR/..
 rm -rf $JOB_TMPDIR
 
 # if defined, remove the temporary isaaclab directory pushed when the job was submitted
-if $REMOVE_CODE_COPY_AFTER_JOB; then
+# only remove folders if run finished successfully -- otherwise we want to keep the logs
+if $REMOVE_CODE_COPY_AFTER_JOB && [ $EXIT_CODE -eq 0 ]; then
     rm -rf $1
 fi
 
