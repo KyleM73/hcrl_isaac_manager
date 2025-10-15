@@ -75,9 +75,21 @@ submit_job() {
 
     echo "[INFO] Arguments passed to job script ${@}"
 
+    DISTRIBUTED=false
+    for arg in "$@"; do
+        if [[ "$arg" == "--distributed" ]]; then
+            DISTRIBUTED=true
+            break
+        fi
+    done
+
+    if $DISTRIBUTED; then
+        export CLUSTER_PYTHON_EXECUTABLE="$CLUSTER_PYTHON_DISTRIBUTED_EXECUTABLE"
+    fi
+
     case $CLUSTER_JOB_SCHEDULER in
         "SLURM")
-            job_script_file=submit_job_slurm.sh
+            job_script_file=$( $DISTRIBUTED && echo "submit_distributed_job_slurm.sh" || echo "submit_job_slurm.sh" )
             ;;
         "PBS")
             job_script_file=submit_job_pbs.sh
