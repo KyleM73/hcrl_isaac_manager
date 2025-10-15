@@ -132,10 +132,11 @@ cluster:
 		echo "[INFO] Writing cluster env file..."; \
 		HOME=$$HOME SCRATCH=$$SCRATCH CLUSTER_USERNAME=$$CLUSTER_USERNAME envsubst < scripts/cluster/tools/.env.cluster.template > scripts/cluster/.env.cluster; \
 	fi;
-	@if [ ! -f "$(TOPDIR)/scripts/cluster/submit_job_slurm.sh" ]; then \
+	@if [ ! -f "$(TOPDIR)/scripts/cluster/submit_job_slurm.sh" || ! -f "$(TOPDIR)/scripts/cluster/submit_distributed_job_slurm.sh" ]; then \
 		read -p "Email (for job notifications): " EMAIL; \
 		echo "[INFO] Writing SLURM job config file..."; \
-		EMAIL=$$EMAIL envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh; \
+		EMAIL=$$EMAIL QUEUE="gpu-a100-small" NUM_PROCS=1 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh; \
+		EMAIL=$$EMAIL QUEUE="gpu-a100" NUM_PROCS=2 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_distributed_job_slurm.sh; \
 	fi;
 	if ! command -v docker >/dev/null 2>&1; then \
 		curl -fsSL https://get.docker.com -o get-docker.sh; \
