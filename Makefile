@@ -12,7 +12,7 @@ RC_FILE := $$HOME/.bashrc
 TOPDIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 ENV_BASH := $(TOPDIR)/scripts/.env.bash
 
-.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv cluster
+.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv docker cluster ray
 
 all: deps gitman clean setup
 
@@ -37,7 +37,7 @@ deps:
 	pip install --user --no-input gitman >/dev/null 2>&1 || true; \
 
 gitman:
-	gitman update
+	gitman update --force
 
 clean: clean-$(PACKAGE_MANAGER)
 	@if grep -Fxq "source $(ENV_BASH)" $(RC_FILE); then \
@@ -122,27 +122,12 @@ conda:
 uv:
 	$(MAKE) PACKAGE_MANAGER=uv all
 
-cluster:
-	@if [ ! -f "$(TOPDIR)/scripts/cluster/.env.cluster" ]; then \
-		read -p "TACC Username: " CLUSTER_USERNAME; \
-		read -p "Home Directory (`echo '$$HOME'` from TACC machine): " HOME; \
-		read -p "Scratch Directory (`echo '$$SCRATCH'` from TACC machine): " SCRATCH; \
-		case "$$HOME" in /*) ;; *) HOME="/$$HOME" ;; esac; \
-		case "$$SCRATCH" in /*) ;; *) SCRATCH="/$$SCRATCH" ;; esac; \
-		echo "[INFO] Writing cluster env file..."; \
-		HOME=$$HOME SCRATCH=$$SCRATCH CLUSTER_USERNAME=$$CLUSTER_USERNAME envsubst < scripts/cluster/tools/.env.cluster.template > scripts/cluster/.env.cluster; \
-	fi;
-	@if [ ! -f "$(TOPDIR)/scripts/cluster/submit_job_slurm.sh" || ! -f "$(TOPDIR)/scripts/cluster/submit_distributed_job_slurm.sh" ]; then \
-		read -p "Email (for job notifications): " EMAIL; \
-		echo "[INFO] Writing SLURM job config file..."; \
-		EMAIL=$$EMAIL QUEUE="gpu-a100-small" NUM_PROCS=1 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh; \
-		EMAIL=$$EMAIL QUEUE="gpu-a100" NUM_PROCS=2 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_distributed_job_slurm.sh; \
-	fi;
+docker:
 	if ! command -v docker >/dev/null 2>&1; then \
 		curl -fsSL https://get.docker.com -o get-docker.sh; \
 		sudo sh get-docker.sh; \
 		sudo groupadd docker; \
-		sudo usermode -aG docker $$USER; \
+		sudo usermod -aG docker $$USER; \
 		newgrp docker; \
 		echo "[INFO] Docker successfully installed and configured. Log out and back in for changes to take effect, then rerun `make cluster`."; \
 		exit 0; \
@@ -159,6 +144,24 @@ cluster:
 		sudo nvidia-ctk runtime configure --runtime=docker; \
 		sudo systemctl restart docker; \
 	fi;
+	$(TOPDIR)/scripts/container.sh start;
+
+cluster:
+	@if [ ! -f "$(TOPDIR)/scripts/cluster/.env.cluster" ]; then \
+		read -p "TACC Username: " CLUSTER_USERNAME; \
+		read -p "Home Directory (`echo '$$HOME'` from TACC machine): " HOME; \
+		read -p "Scratch Directory (`echo '$$SCRATCH'` from TACC machine): " SCRATCH; \
+		case "$$HOME" in /*) ;; *) HOME="/$$HOME" ;; esac; \
+		case "$$SCRATCH" in /*) ;; *) SCRATCH="/$$SCRATCH" ;; esac; \
+		echo "[INFO] Writing cluster env file..."; \
+		HOME=$$HOME SCRATCH=$$SCRATCH CLUSTER_USERNAME=$$CLUSTER_USERNAME envsubst < scripts/cluster/tools/.env.cluster.template > scripts/cluster/.env.cluster; \
+	fi;
+	@if [ ! -f "$(TOPDIR)/scripts/cluster/submit_job_slurm.sh" || ! -f "$(TOPDIR)/scripts/cluster/submit_distributed_job_slurm.sh" ]; then \
+		read -p "Email (for job notifications): " EMAIL; \
+		echo "[INFO] Writing SLURM job config file..."; \
+		EMAIL=$$EMAIL QUEUE="gpu-a100-small" NUM_PROCS=1 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh; \
+		EMAIL=$$EMAIL QUEUE="gpu-a100" NUM_PROCS=2 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_distributed_job_slurm.sh; \
+	fi;
 	if ! command -v apptainer >/dev/null 2>&1; then \
 		sudo apt update; \
 		sudo apt install -y software-properties-common; \
@@ -166,5 +169,5 @@ cluster:
 		sudo apt update; \
 		sudo apt install -y apptainer; \
 	fi;
-	$(TOPDIR)/scripts/container.sh start;
+	$(MAKE) docker;
 	$(TOPDIR)/scripts/cluster.sh push;
