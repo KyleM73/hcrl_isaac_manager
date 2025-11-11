@@ -1,4 +1,4 @@
-FROM isaac-lab-base:latest
+FROM nvcr.io/nvidia/isaac-lab:2.3.0
 
 # WGet is needed so that GCS or other cloud providers can mark the container as ready.
 # Otherwise the Ray liveliness checks fail.
