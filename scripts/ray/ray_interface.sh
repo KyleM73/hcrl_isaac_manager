@@ -32,15 +32,17 @@ check_docker_version() {
 #==
 
 help() {
-    echo -e "\nusage: $(basename "$0") [-h] <command> [<profile>] [<job_args>...] -- Utility for interfacing between IsaacLab and compute clusters."
+    echo -e "\nusage: $(basename "$0") [-h] <command> [<job_args>...] -- Utility for interfacing between IsaacLab and Ray clusters."
     echo -e "\noptions:"
     echo -e "  -h              Display this help message."
     echo -e "\ncommands:"
-    echo -e "  push [<profile>]              Push the docker image to the cluster."
-    echo -e "  job [<profile>] [<job_args>]  Submit a job to the cluster."
+    echo -e "  push                             Push the docker image to Docker Hub (will be pulled by the cluster on next startup)."
+    echo -e "  job [<job_args>]                 Submit a job to the cluster."
+    echo -e "  stop [<run_id>] [<script_args>]  Stop a currently running job."
+    echo -e "  list [<script_args>]             View existing jobs on the cluster."
     echo -e "\nwhere:"
-    echo -e "  <profile>  is the optional container profile specification. Defaults to 'base'."
     echo -e "  <job_args> are optional arguments specific to the job command."
+    echo -e "  <script_args> are the per-script arguments (see Ray documentation and list_jobs.py respectively)."
     echo -e "\n" >&2
 }
 
@@ -100,6 +102,25 @@ case $command in
             --aggregate_jobs ray/wrap_resources.py \
                 --gpu_per_worker 1 \
                 --sub_jobs "/workspace/isaaclab/isaaclab.sh -p ray/job_wrapper.py --job-script $PYTHON_SCRIPT $job_args"
+        ;;
+    stop)
+        job_id=$1
+        shift
+        stop_args="$@"
+        source $SCRIPT_DIR/.env.ray
+        if python $SCRIPT_DIR/list_jobs.py --user_id $UT_EID --check_id $job_id; then
+            ray job stop --address http://100.79.16.15:8265 $job_id $stop_args
+        else
+            echo "[ERROR] The specified job $job_id cannot be stopped."
+            echo "[ERROR] Only running jobs started by you can be cancelled."
+            echo "[ERROR] You can view these jobs with \`scripts/ray.sh list\`." 
+            exit 1
+        fi
+        ;;
+    list)
+        list_args="$@"
+        source $SCRIPT_DIR/.env.ray
+        python $SCRIPT_DIR/list_jobs.py --user_id $UT_EID $list_args
         ;;
     *)
         echo "Error: Invalid command: $command" >&2

@@ -61,10 +61,15 @@ from dotenv import dotenv_values
 
 from ray import job_submission
 
-# script_directory = os.path.dirname(os.path.abspath(__file__))
-script_directory = "/home/emily/hcrl_isaac_manager/resources/IsaacLab/source/hcrl_isaaclab/scripts"
-isaaclab_directory = os.path.abspath(os.path.join(os.path.dirname(__file__), "../../"))
-CONFIG = {"working_dir": script_directory, "executable": "/workspace/isaaclab/isaaclab.sh -p"}
+CONFIG = {
+    "py_executable": "/workspace/isaaclab/isaaclab.sh -p",
+    "excludes": [
+        "**/resources/*_robots",
+        "**/wandb/**",
+        "**/logs/**",
+        "**/.git/objects/**",
+    ],
+}
 
 
 def read_cluster_spec(fn: str | None = None) -> list[dict]:
@@ -82,7 +87,7 @@ def read_cluster_spec(fn: str | None = None) -> list[dict]:
             parts = line.strip().split(" ")
             http_address = parts[3]
             cluster_info = {"name": parts[1], "address": http_address}
-            print(f"[INFO] Setting {cluster_info['name']}")  # with {cluster_info['num_gpu']} GPUs.")
+            print(f"[INFO] Setting {cluster_info['name']}")
             clusters.append(cluster_info)
 
     return clusters
@@ -100,7 +105,7 @@ def submit_job(cluster: dict, job_command: str, runtime_env: dict) -> None:
     """
     address = cluster["address"]
     cluster_name = cluster["name"]
-    print(f"[INFO]: Submitting job to cluster '{cluster_name}' at {address}")  # with {num_gpus} GPUs.")
+    print(f"[INFO]: Submitting job to cluster '{cluster_name}' at {address}")
     client = job_submission.JobSubmissionClient(address)
     print(f"[INFO]: Checking contents of the directory: {runtime_env['working_dir']}")
     try:
@@ -108,9 +113,11 @@ def submit_job(cluster: dict, job_command: str, runtime_env: dict) -> None:
         print(f"[INFO]: Directory contents: {dir_contents}")
     except Exception as e:
         print(f"[INFO]: Failed to list directory contents: {str(e)}")
-    entrypoint = f"{CONFIG['executable']} {job_command}"
+    entrypoint = f"{runtime_env['py_executable']} {job_command}"
     print(f"[INFO]: Attempting entrypoint {entrypoint=} in cluster {cluster}")
-    job_id = client.submit_job(entrypoint=entrypoint, runtime_env=runtime_env)
+    job_id = client.submit_job(
+        entrypoint=entrypoint, runtime_env=runtime_env, metadata={"user_id": runtime_env["env_vars"]["UT_EID"]}
+    )
     status = client.get_job_status(job_id)
     while status in [job_submission.JobStatus.PENDING, job_submission.JobStatus.RUNNING]:
         time.sleep(5)
@@ -175,15 +182,9 @@ if __name__ == "__main__":
     clusters = read_cluster_spec(args.config_file)
     env_dict = parse_env_file(args.env_file)
     runtime_env = {
-        "working_dir": CONFIG["working_dir"],
-        "py_executable": CONFIG["executable"],
+        "working_dir": env_dict["EXT_DIR"],
         "env_vars": env_dict,
         "py_modules": None if not args.py_modules else args.py_modules,
-        "excludes": [
-            "**/resources/*_robots",
-            "**/wandb/**",
-            "**/logs/**",
-            "**/.git/objects/**",
-        ],
+        **CONFIG,
     }
     submit_jobs_to_clusters(formatted_jobs, clusters, runtime_env)
