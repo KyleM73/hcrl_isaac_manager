@@ -36,13 +36,14 @@ help() {
     echo -e "\noptions:"
     echo -e "  -h              Display this help message."
     echo -e "\ncommands:"
-    echo -e "  push                             Push the docker image to Docker Hub (will be pulled by the cluster on next startup)."
-    echo -e "  job [<job_args>]                 Submit a job to the cluster."
-    echo -e "  stop [<run_id>] [<script_args>]  Stop a currently running job."
-    echo -e "  list [<script_args>]             View existing jobs on the cluster."
+    echo -e "  push                                         Push the docker image to Docker Hub (will be pulled by the cluster on next startup)."
+    echo -e "  job [<job_args>]                             Submit a job to the cluster."
+    echo -e "  stop [<run_id>] [<script_args>]              Stop a currently running job."
+    echo -e "  list [<script_args>]                         View existing jobs on the cluster."
+    echo -e "  logs [<run_id>] [<out_file>] [<script_args>] Write logs from a run to <out_file>."
     echo -e "\nwhere:"
     echo -e "  <job_args> are optional arguments specific to the job command."
-    echo -e "  <script_args> are the per-script arguments (see Ray documentation and list_jobs.py respectively)."
+    echo -e "  <script_args> are the per-script arguments (see Ray documentation and list_jobs.py)."
     echo -e "\n" >&2
 }
 
@@ -121,6 +122,21 @@ case $command in
         list_args="$@"
         source $SCRIPT_DIR/.env.ray
         python $SCRIPT_DIR/list_jobs.py --user_id $UT_EID $list_args
+        ;;
+    logs)
+        job_id=$1
+        out_file=$2
+        shift 2
+        logs_args="$@"
+        source $SCRIPT_DIR/.env.ray
+        if python $SCRIPT_DIR/list_jobs.py --user_id $UT_EID --all_statuses --check_id $job_id; then
+            ray job logs --address http://100.79.16.15:8265 $job_id $logs_args > $out_file
+        else
+            echo "[ERROR] The specified job $job_id cannot be stopped."
+            echo "[ERROR] You may only view the logs of jobs started by you."
+            echo "[ERROR] You can view these jobs with \`scripts/ray.sh list --all_statuses\`." 
+            exit 1
+        fi
         ;;
     *)
         echo "Error: Invalid command: $command" >&2
