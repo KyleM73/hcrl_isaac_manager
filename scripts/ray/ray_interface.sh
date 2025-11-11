@@ -93,16 +93,15 @@ case $command in
         job_args="$@"
         echo "[INFO] Executing job command"
         [ -n "$job_args" ] && echo -e "\tJob arguments: $job_args"
-        source $SCRIPT_DIR/.env.ray
+        job_config=$SCRIPT_DIR/job_config.yaml
         # Submit job
         echo "[INFO] Executing job script..."
         RAY_RUNTIME_ENV_IGNORE_GITIGNORE=1 python $SCRIPT_DIR/submit_job.py \
             --config_file $SCRIPT_DIR/ray.cfg \
-            --env_file $SCRIPT_DIR/.env.ray \
-            --py_modules $EXT_PATHS \
+            --job_config $job_config \
             --aggregate_jobs ray/wrap_resources.py \
                 --gpu_per_worker 1 \
-                --sub_jobs "/workspace/isaaclab/isaaclab.sh -p ray/job_wrapper.py --job-script $PYTHON_SCRIPT $job_args"
+                --sub_jobs "/workspace/isaaclab/isaaclab.sh -p ray/job_wrapper.py $job_args"
         ;;
     stop)
         job_id=$1

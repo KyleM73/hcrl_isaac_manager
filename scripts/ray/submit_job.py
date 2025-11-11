@@ -58,18 +58,10 @@ import os
 import time
 from concurrent.futures import ThreadPoolExecutor
 from dotenv import dotenv_values
+import yaml
+import json
 
 from ray import job_submission
-
-CONFIG = {
-    "py_executable": "/workspace/isaaclab/isaaclab.sh -p",
-    "excludes": [
-        "**/resources/*_robots",
-        "**/wandb/**",
-        "**/logs/**",
-        "**/.git/objects/**",
-    ],
-}
 
 
 def read_cluster_spec(fn: str | None = None) -> list[dict]:
@@ -93,13 +85,7 @@ def read_cluster_spec(fn: str | None = None) -> list[dict]:
     return clusters
 
 
-def parse_env_file(fp: str | None) -> dict:
-    if fp is None:
-        return {}
-    return dict(dotenv_values(fp))
-
-
-def submit_job(cluster: dict, job_command: str, runtime_env: dict) -> None:
+def submit_job(cluster: dict, job_command: str, runtime_env: dict, metadata: dict, other_data: dict) -> None:
     """
     Submits a job to a single cluster, prints the final result and Ray dashboard URL at the end.
     """
@@ -113,11 +99,9 @@ def submit_job(cluster: dict, job_command: str, runtime_env: dict) -> None:
         print(f"[INFO]: Directory contents: {dir_contents}")
     except Exception as e:
         print(f"[INFO]: Failed to list directory contents: {str(e)}")
-    entrypoint = f"{runtime_env['py_executable']} {job_command}"
+    entrypoint = f"{runtime_env['py_executable']} {job_command} --job-script {other_data['python_script']} --file-mounts '\"{other_data['file_mounts']}\"' --run-start-commands '\"{other_data['run_start_commands']}\"'"
     print(f"[INFO]: Attempting entrypoint {entrypoint=} in cluster {cluster}")
-    job_id = client.submit_job(
-        entrypoint=entrypoint, runtime_env=runtime_env, metadata={"user_id": runtime_env["env_vars"]["UT_EID"]}
-    )
+    job_id = client.submit_job(entrypoint=entrypoint, runtime_env=runtime_env, metadata=metadata)
     status = client.get_job_status(job_id)
     while status in [job_submission.JobStatus.PENDING, job_submission.JobStatus.RUNNING]:
         time.sleep(5)
@@ -130,7 +114,9 @@ def submit_job(cluster: dict, job_command: str, runtime_env: dict) -> None:
     print("----------------------------------------------------")
 
 
-def submit_jobs_to_clusters(jobs: list[str], clusters: list[dict], runtime_env: dict) -> None:
+def submit_jobs_to_clusters(
+    jobs: list[str], clusters: list[dict], runtime_env: dict, metadata: dict, other_data: dict
+) -> None:
     """
     Submit all jobs to their respective clusters, cycling through clusters if there are more jobs than clusters.
     """
@@ -148,22 +134,47 @@ def submit_jobs_to_clusters(jobs: list[str], clusters: list[dict], runtime_env: 
         for idx, job_command in enumerate(jobs):
             # Cycle through clusters using modulus to wrap around if there are more jobs than clusters
             cluster = clusters[idx % len(clusters)]
-            executor.submit(submit_job, cluster, job_command, runtime_env)
+            executor.submit(submit_job, cluster, job_command, runtime_env, metadata, other_data)
+
+
+def parse_env_file(fp: str | None) -> dict:
+    if fp is None:
+        return {}
+    return dict(dotenv_values(fp))
+
+
+def parse_job_config(cfg_file: str) -> tuple[dict, dict, dict]:
+    with open(cfg_file, "r") as job_yaml:
+        job_config = yaml.safe_load(job_yaml)
+    working_dir = job_config["ext_dir"]
+    env_dict = parse_env_file(job_config.get("env_file"))
+    py_modules = list(job_config.get("file_mounts", {}).keys())
+    if len(py_modules) == 0:
+        py_modules = None
+        file_mounts = "{}"
+    else:
+        file_mounts = json.dumps({k.split("/")[-1]: v for k, v in job_config["file_mounts"].items()})
+    run_start_commands = json.dumps(job_config.get("run_start_commands", []))
+    runtime_env = {
+        "working_dir": working_dir,
+        "env_vars": env_dict,
+        "py_modules": py_modules,
+        "py_executable": job_config["py_executable"],
+        "excludes": job_config.get("excludes", []),
+    }
+    metadata = {"user_id": job_config["user_id"]}
+    other_data = {
+        "python_script": job_config["python_script"],
+        "file_mounts": file_mounts.replace('"', '\\"'),
+        "run_start_commands": run_start_commands.replace('\\"', '"').replace('"', '\\"'),
+    }
+    return runtime_env, metadata, other_data
 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Submit multiple GPU jobs to multiple Ray clusters.")
     parser.add_argument("--config_file", default="~/.cluster_config", help="The cluster config path.")
-    parser.add_argument("--env_file", default=None, help="Path to environment file.")
-    parser.add_argument(
-        "--py_modules",
-        type=str,
-        nargs="*",
-        default=[],
-        help=(
-            "List of python modules or paths to add before running the job. Example: --py_modules my_package/my_package"
-        ),
-    )
+    parser.add_argument("--job_config", help="Path to the job config file.")
     parser.add_argument(
         "--aggregate_jobs",
         type=str,
@@ -179,12 +190,7 @@ if __name__ == "__main__":
     else:
         formatted_jobs = []
     print(f"[INFO]: Isaac Ray Wrapper received jobs {formatted_jobs=}")
+
     clusters = read_cluster_spec(args.config_file)
-    env_dict = parse_env_file(args.env_file)
-    runtime_env = {
-        "working_dir": env_dict["EXT_DIR"],
-        "env_vars": env_dict,
-        "py_modules": None if not args.py_modules else args.py_modules,
-        **CONFIG,
-    }
-    submit_jobs_to_clusters(formatted_jobs, clusters, runtime_env)
+    runtime_env, metadata, other_data = parse_job_config(args.job_config)
+    submit_jobs_to_clusters(formatted_jobs, clusters, runtime_env, metadata, other_data)
