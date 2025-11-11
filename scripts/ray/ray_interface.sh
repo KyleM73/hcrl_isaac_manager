@@ -98,7 +98,8 @@ case $command in
             --env_file $SCRIPT_DIR/.env.ray \
             --py_modules $EXT_PATHS \
             --aggregate_jobs ray/wrap_resources.py \
-                --sub_jobs "/workspace/isaaclab/isaaclab.sh -p $PYTHON_SCRIPT $job_args"
+                --gpu_per_worker 1 \
+                --sub_jobs "/workspace/isaaclab/isaaclab.sh -p ray/job_wrapper.py --job-script $PYTHON_SCRIPT $job_args"
         ;;
     *)
         echo "Error: Invalid command: $command" >&2
