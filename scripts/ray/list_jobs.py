@@ -35,7 +35,7 @@ def list_filtered_jobs() -> list[JobDetails]:
         jobs = [job for job in jobs if (job.metadata is not None and job.metadata.get("user_id") == args.user_id)]
     if not args.all_statuses:
         jobs = [job for job in jobs if job.status in RUNNING_STATUS]
-    return sorted(jobs, key=lambda job: job.start_time, reverse=True)
+    return sorted(jobs, key=lambda job: job.start_time)
 
 
 def unix_to_timestr(time: int | None) -> str:
