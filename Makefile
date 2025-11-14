@@ -2,15 +2,13 @@ SHELL := /bin/bash
 .ONESHELL:
 
 # Package manager selection - can be 'conda' or 'uv'
-PACKAGE_MANAGER ?= conda
+PACKAGE_MANAGER ?= uv
 VENV_NAME ?= ilab
-ISAACSIM_SETUP := resources/IsaacLab/_isaac_sim/setup_conda_env.sh
-PYTHON_PATH := resources/isaacsim/_build/linux-x86_64/release/kit/python/bin/python3
-RC_FILE := $$HOME/.bashrc
+RC_FILE ?= $$HOME/.bashrc
 
 # other variables
 TOPDIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
-ENV_BASH := $(TOPDIR)/scripts/.env.bash
+BASH_UTILS := $(TOPDIR)/scripts/utils.sh
 
 .PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv cluster
 
@@ -40,9 +38,9 @@ gitman:
 	gitman update
 
 clean: clean-$(PACKAGE_MANAGER)
-	@if grep -Fxq "source $(ENV_BASH)" $(RC_FILE); then \
-		echo "[INFO] Removing .env.bash from $$( basename $(RC_FILE) )"
-		sed -i "\|source $(ENV_BASH)|d" $(RC_FILE); \
+	@if grep -Fq "source $(BASH_UTILS)" $(RC_FILE); then \
+		echo "[INFO] Removing $$( basename $(BASH_UTILS) ) from $$( basename $(RC_FILE) )"
+		sed -i "\|^.*source $(BASH_UTILS)|d" $(RC_FILE); \
 	fi;
 
 clean-conda:
@@ -65,11 +63,15 @@ setup: setup-$(PACKAGE_MANAGER)
 		read -p "W&B Username: " WANDB_USERNAME; \
 		read -p "W&B API Key: " WANDB_API_KEY; \
 		echo "[INFO] Writing wandb env file..."; \
-		WANDB_USERNAME=$$WANDB_USERNAME WANDB_API_KEY=$$WANDB_API_KEY envsubst < scripts/cluster/tools/.env.wandb.template > scripts/.env.wandb; \
+		WANDB_USERNAME=$$WANDB_USERNAME WANDB_API_KEY=$$WANDB_API_KEY envsubst < scripts/tools/.env.wandb.template > scripts/.env.wandb; \
 	fi;
-	@if ! grep -Fxq "source $(ENV_BASH)" $(RC_FILE); then \
-		echo "[INFO] Adding .env.bash to $$( basename $(RC_FILE) )"; \
-		echo "source $(ENV_BASH)" >> $(RC_FILE); \
+	@if ! grep -Fq "source $(BASH_UTILS)" $(RC_FILE); then \
+		echo "[INFO] Adding $$( basename $(BASH_UTILS) ) to $$( basename $(RC_FILE) )"; \
+		echo "PACKAGE_MANAGER=$(PACKAGE_MANAGER) VENV_NAME=$(VENV_NAME) source $(BASH_UTILS)" >> $(RC_FILE); \
+		echo -e "[INFO] Successfully added $$( basename $(BASH_UTILS) ) to $$( basename $(RC_FILE) )\n"; \
+		echo -e "\t\t1. For development in the main hcrl_isaaclab extension, run:	ilab"; \
+		echo -e "\t\t2. For manager use (e.g. cluster scripts), run:					manager"; \
+		echo -e "\n"; \
 	fi;
 
 setup-conda:
@@ -81,40 +83,11 @@ setup-conda:
 	conda run -n $(VENV_NAME) ./isaaclab.sh -i rsl_rl;
 
 setup-uv:
-	uv venv --clear --python $(PYTHON_PATH) resources/IsaacLab/$(VENV_NAME)
-	cat >> resources/IsaacLab/$(VENV_NAME)/bin/activate <<-'EOF'
-	if [[ "$${BASH_SOURCE[0]}" == /* ]]; then
-	    ACTIVATE_SCRIPT_PATH="$${BASH_SOURCE[0]}"
-	else
-	    ACTIVATE_SCRIPT_PATH="$$(pwd)/$${BASH_SOURCE[0]}"
-	fi
-	ACTIVATE_SCRIPT_DIR="$$(dirname "$$(readlink -f "$$ACTIVATE_SCRIPT_PATH")")"
-	ISAACLAB_ROOT="$$ACTIVATE_SCRIPT_DIR/../.."
-	ISAACLAB_ROOT="$$(readlink -f "$$ISAACLAB_ROOT")"
-	. "$$ISAACLAB_ROOT/_isaac_sim/setup_conda_env.sh"
-	export ISAACLAB_PATH="$$ISAACLAB_ROOT"
-	export CONDA_PREFIX="$$VIRTUAL_ENV"
-	EOF
-	cat > resources/IsaacLab/$(VENV_NAME)/bin/isaaclab <<-'EOF'
-	#!/usr/bin/env bash
-	set -e
-	if [[ "$$0" == /* ]]; then
-	    SCRIPT_PATH="$$0"
-	else
-	    SCRIPT_PATH="$$(pwd)/$$0"
-	fi
-	SCRIPT_DIR="$$(dirname "$$(readlink -f "$$SCRIPT_PATH")")"
-	ISAACLAB_SCRIPT="$$SCRIPT_DIR/../../isaaclab.sh"
-	ISAACLAB_SCRIPT="$$(readlink -f "$$ISAACLAB_SCRIPT")"
-	exec "$$ISAACLAB_SCRIPT" "$$@"
-	EOF
-	chmod +x resources/IsaacLab/$(VENV_NAME)/bin/isaaclab
-	source resources/IsaacLab/$(VENV_NAME)/bin/activate && \
-	hash -r && \
-	export CONDA_PREFIX="$$VIRTUAL_ENV" && \
-	uv pip install --upgrade pip && \
-	python -m pip install --upgrade pip && \
-	isaaclab -i rsl_rl;
+	cp scripts/isaacsim/setup_conda_env.sh resources/IsaacLab/_isaac_sim/setup_conda_env.sh; \
+	cp scripts/isaacsim/setup_python_env.sh resources/IsaacLab/_isaac_sim/setup_python_env.sh; \
+	cd resources/IsaacLab && ./isaaclab.sh -u $(VENV_NAME); \
+	source $(VENV_NAME)/bin/activate; \
+	./isaaclab.sh -i rsl_rl;
 
 conda:
 	$(MAKE) PACKAGE_MANAGER=conda all
