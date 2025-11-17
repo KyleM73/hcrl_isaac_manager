@@ -220,7 +220,7 @@ case $command in
         # use mkpath flag in rsync instead, may not work on older systems
         # use --rsync_path instead of --mkpath (rsync>=3.2.3 for mkpath)
         # Sync Isaac Lab code
-        rsync -rh --rsync-path="mkdir -p $CLUSTER_ISAACLAB_DIR && rsync" --exclude="*.git*" --filter=':- .dockerignore'  /$SCRIPT_DIR/../.. $CLUSTER_LOGIN:$CLUSTER_ISAACLAB_DIR
+        rsync -rh --rsync-path="mkdir -p $CLUSTER_ISAACLAB_DIR && rsync" --exclude="*.git*" --exclude "ilab/" --exclude "wandb/" --exclude "logs/" --filter=':- .dockerignore'  /$SCRIPT_DIR/../.. $CLUSTER_LOGIN:$CLUSTER_ISAACLAB_DIR
         # execute job script
         echo "[INFO] Executing job script..."
         # check whether the second argument is a profile or a job argument
