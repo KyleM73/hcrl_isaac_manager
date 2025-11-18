@@ -91,17 +91,21 @@ def submit_job(cluster: dict, job_command: str, runtime_env: dict, metadata: dic
     """
     address = cluster["address"]
     cluster_name = cluster["name"]
-    print(f"[INFO]: Submitting job to cluster '{cluster_name}' at {address}")
+    print(f"[INFO] Submitting job to cluster '{cluster_name}' at {address}")
     client = job_submission.JobSubmissionClient(address)
-    print(f"[INFO]: Checking contents of the directory: {runtime_env['working_dir']}")
+    print(f"[INFO] Checking contents of the directory: {runtime_env['working_dir']}")
     try:
         dir_contents = os.listdir(runtime_env["working_dir"])
-        print(f"[INFO]: Directory contents: {dir_contents}")
+        print(f"[INFO] Directory contents: {dir_contents}")
     except Exception as e:
-        print(f"[INFO]: Failed to list directory contents: {str(e)}")
+        print(f"[INFO] Failed to list directory contents: {str(e)}")
     entrypoint = f"{runtime_env['py_executable']} {job_command} --job-script {other_data['python_script']} --file-mounts '\"{other_data['file_mounts']}\"' --run-start-commands '\"{other_data['run_start_commands']}\"'"
-    print(f"[INFO]: Attempting entrypoint {entrypoint=} in cluster {cluster}")
+    print(f"[INFO] Attempting entrypoint {entrypoint=} in cluster {cluster}")
     job_id = client.submit_job(entrypoint=entrypoint, runtime_env=runtime_env, metadata=metadata)
+
+    print(
+        f"[INFO] Submitted job with ID {job_id}. Waiting for logs. You can exit and allow job to finish asynchronously with Ctrl-C."
+    )
     status = client.get_job_status(job_id)
     while status in [job_submission.JobStatus.PENDING, job_submission.JobStatus.RUNNING]:
         time.sleep(5)
@@ -109,7 +113,7 @@ def submit_job(cluster: dict, job_command: str, runtime_env: dict, metadata: dic
 
     final_logs = client.get_job_logs(job_id)
     print("----------------------------------------------------")
-    print(f"[INFO]: Cluster {cluster_name} Logs: \n")
+    print(f"[INFO] Cluster {cluster_name} Logs: \n")
     print(final_logs)
     print("----------------------------------------------------")
 
@@ -124,11 +128,11 @@ def submit_jobs_to_clusters(
         raise ValueError("No clusters available for job submission.")
 
     if len(jobs) < len(clusters):
-        print("[INFO]: Less jobs than clusters, some clusters will not receive jobs")
+        print("[INFO] Less jobs than clusters, some clusters will not receive jobs")
     elif len(jobs) == len(clusters):
-        print("[INFO]: Exactly one job per cluster")
+        print("[INFO] Exactly one job per cluster")
     else:
-        print("[INFO]: More jobs than clusters, jobs submitted as clusters become available.")
+        print("[INFO] More jobs than clusters, jobs submitted as clusters become available.")
 
     with ThreadPoolExecutor() as executor:
         for idx, job_command in enumerate(jobs):
@@ -189,7 +193,7 @@ if __name__ == "__main__":
             print("Warning; Split jobs by cluster with the * delimiter")
     else:
         formatted_jobs = []
-    print(f"[INFO]: Isaac Ray Wrapper received jobs {formatted_jobs=}")
+    print(f"[INFO] Isaac Ray Wrapper received jobs {formatted_jobs=}")
 
     clusters = read_cluster_spec(args.config_file)
     runtime_env, metadata, other_data = parse_job_config(args.job_config)
