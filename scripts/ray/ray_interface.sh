@@ -100,7 +100,7 @@ case $command in
             --job_config $job_config \
             --aggregate_jobs ray/wrap_resources.py \
                 --gpu_per_worker 1 \
-                --sub_jobs "/workspace/isaaclab/isaaclab.sh -p ray/job_wrapper.py $job_args"
+                $job_args
         ;;
     stop)
         job_id=$1
