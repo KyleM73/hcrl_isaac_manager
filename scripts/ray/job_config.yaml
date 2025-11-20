@@ -17,7 +17,7 @@ file_mounts: {
 # Commands to execute after mounting runtime dependencies but before installation
 # Default command here creates a symlink between hcrl_robots (installed at /workspace/isaaclab) and its location within
 #   hcrl_isaaclab, since hcrl_robots files are too big to transfer at runtime
-run_start_commands:
+init_commands:
   - rm -f /workspace/isaaclab/source/hcrl_isaaclab/resources/hcrl_robots &&
     mkdir -p /workspace/isaaclab/source/hcrl_isaaclab/resources &&
     ln -s /workspace/isaaclab/hcrl_robots /workspace/isaaclab/source/hcrl_isaaclab/resources/hcrl_robots
