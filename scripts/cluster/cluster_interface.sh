@@ -210,7 +210,7 @@ case $command in
         CLUSTER_ISAACLAB_DIR="${CLUSTER_ISAACLAB_DIR}_${current_datetime}"
         # Sync Isaac Lab code
         echo "[INFO] Syncing Isaac Lab code..."
-        rsync -rh --rsync-path="mkdir -p $CLUSTER_ISAACLAB_DIR && rsync" --exclude="*.git*" --filter=':- .dockerignore'  /$SCRIPT_DIR/../.. $CLUSTER_LOGIN:$CLUSTER_ISAACLAB_DIR
+        rsync -rh --rsync-path="mkdir -p $CLUSTER_ISAACLAB_DIR && rsync" --exclude="*.git*" --exclude "ilab/" --exclude "wandb/" --exclude "logs/" --filter=':- .dockerignore'  /$SCRIPT_DIR/../.. $CLUSTER_LOGIN:$CLUSTER_ISAACLAB_DIR
         # execute job script
         echo "[INFO] Executing job script..."
         # check whether the second argument is a profile or a job argument
