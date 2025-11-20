@@ -12,7 +12,7 @@ RC_FILE := $$HOME/.bashrc
 TOPDIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 ENV_BASH := $(TOPDIR)/scripts/.env.bash
 
-.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv docker cluster ray
+.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv cluster
 
 all: deps gitman clean setup
 
@@ -37,7 +37,7 @@ deps:
 	pip install --user --no-input gitman >/dev/null 2>&1 || true; \
 
 gitman:
-	gitman update --force
+	gitman update
 
 clean: clean-$(PACKAGE_MANAGER)
 	@if grep -Fxq "source $(ENV_BASH)" $(RC_FILE); then \
@@ -122,30 +122,6 @@ conda:
 uv:
 	$(MAKE) PACKAGE_MANAGER=uv all
 
-docker:
-	if ! command -v docker >/dev/null 2>&1; then \
-		curl -fsSL https://get.docker.com -o get-docker.sh; \
-		sudo sh get-docker.sh; \
-		sudo groupadd docker; \
-		sudo usermod -aG docker $$USER; \
-		newgrp docker; \
-		echo "[INFO] Docker successfully installed and configured. Log out and back in for changes to take effect, then rerun `make cluster`."; \
-		exit 0; \
-	fi;
-	if ! command -v nvidia-container-toolkit >/dev/null 2>&1; then \
-		curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
-			&& curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
-			sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-			sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
-			&& \
-			sudo apt-get update; \
-		sudo apt-get install -y nvidia-container-toolkit; \
-		sudo systemctl restart docker; \
-		sudo nvidia-ctk runtime configure --runtime=docker; \
-		sudo systemctl restart docker; \
-	fi;
-	$(TOPDIR)/scripts/container.sh start;
-
 cluster:
 	@if [ ! -f "$(TOPDIR)/scripts/cluster/.env.cluster" ]; then \
 		read -p "TACC Username: " CLUSTER_USERNAME; \
@@ -162,6 +138,27 @@ cluster:
 		EMAIL=$$EMAIL QUEUE="gpu-a100-small" NUM_PROCS=1 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh; \
 		EMAIL=$$EMAIL QUEUE="gpu-a100" NUM_PROCS=2 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_distributed_job_slurm.sh; \
 	fi;
+	if ! command -v docker >/dev/null 2>&1; then \
+		curl -fsSL https://get.docker.com -o get-docker.sh; \
+		sudo sh get-docker.sh; \
+		sudo groupadd docker; \
+		sudo usermode -aG docker $$USER; \
+		newgrp docker; \
+		echo "[INFO] Docker successfully installed and configured. Log out and back in for changes to take effect, then rerun `make cluster`."; \
+		exit 0; \
+	fi;
+	if ! command -v nvidia-container-toolkit >/dev/null 2>&1; then \
+		curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
+			&& curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
+			sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+			sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list \
+			&& \
+			sudo apt-get update; \
+		sudo apt-get install -y nvidia-container-toolkit; \
+		sudo systemctl restart docker; \
+		sudo nvidia-ctk runtime configure --runtime=docker; \
+		sudo systemctl restart docker; \
+	fi;
 	if ! command -v apptainer >/dev/null 2>&1; then \
 		sudo apt update; \
 		sudo apt install -y software-properties-common; \
@@ -169,5 +166,5 @@ cluster:
 		sudo apt update; \
 		sudo apt install -y apptainer; \
 	fi;
-	$(MAKE) docker;
+	$(TOPDIR)/scripts/container.sh start;
 	$(TOPDIR)/scripts/cluster.sh push;
