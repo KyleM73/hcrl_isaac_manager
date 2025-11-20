@@ -1,0 +1,32 @@
+# File containing environment variables (e.g. W&B credentials)
+# e.g. /path/to/hcrl_isaac_manager/scripts/ray/.env.ray
+env_file: ...
+# UT EID (for tracking ownership of Ray jobs)
+user_id: ...
+# Working directory during job, should contain your scripts
+# e.g. /path/to/hcrl_isaac_manager/resources/IsaacLab/source/hcrl_isaaclab/scripts
+ext_dir: ...
+# Train script to execute on cluster
+python_script: "/workspace/isaaclab/source/hcrl_isaaclab/scripts/train.py"
+# Additional dependencies to mount at runtime (will also auto-install module dependencies if setup.py is present at root level)
+# Base environment on cluster only has the barebones Isaac Lab installation, so you will need to add custom extensions
+#   like hcrl_isaaclab, robot_rl, etc.
+file_mounts: {
+  # e.g. "/path/to/hcrl_isaaclab": "/workspace/isaaclab/source/hcrl_isaaclab"
+}
+# Commands to execute after mounting runtime dependencies but before installation
+# Default command here creates a symlink between hcrl_robots (installed at /workspace/isaaclab) and its location within
+#   hcrl_isaaclab, since hcrl_robots files are too big to transfer at runtime
+init_commands:
+  - rm -f /workspace/isaaclab/source/hcrl_isaaclab/resources/hcrl_robots &&
+    mkdir -p /workspace/isaaclab/source/hcrl_isaaclab/resources &&
+    ln -s /workspace/isaaclab/hcrl_robots /workspace/isaaclab/source/hcrl_isaaclab/resources/hcrl_robots
+# python executable on the cluster
+"py_executable": "/workspace/isaaclab/isaaclab.sh -p"
+# patterns to exclude when copying dependencies (file_mounts) and working directory (ext_dir)
+"excludes":
+  - "**/resources/*_robots"
+  - "**/wandb/**"
+  - "**/logs/**"
+  - "**/.git/objects/**"
+  - "**/.venv/**"
