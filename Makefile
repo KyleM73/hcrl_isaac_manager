@@ -2,37 +2,26 @@ SHELL := /bin/bash
 .ONESHELL:
 
 # Package manager selection - can be 'conda' or 'uv'
-PACKAGE_MANAGER ?= conda
+PACKAGE_MANAGER ?= uv
 VENV_NAME ?= ilab
-ISAACSIM_SETUP := resources/IsaacLab/_isaac_sim/setup_conda_env.sh
-PYTHON_PATH := resources/isaacsim/_build/linux-x86_64/release/kit/python/bin/python3
-RC_FILE := $$HOME/.bashrc
+RC_FILE ?= $$HOME/.bashrc
 
 # other variables
 TOPDIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
-ENV_BASH := $(TOPDIR)/scripts/.env.bash
+BASH_UTILS := $(TOPDIR)/scripts/utils.sh
 
-.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv cluster
+.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv docker cluster
 
 all: deps gitman clean setup
 
 deps:
-	sudo apt-get update && sudo apt-get upgrade -y
-	sudo apt-get install -y cmake build-essential
+	sudo apt-get update && sudo apt-get install -y cmake build-essential
 	sudo apt autoremove -y
-	@if ! command -v gcc >/dev/null 2>&1 || [ $$(gcc -dumpversion | cut -d. -f1) -lt 11 ]; then \
-		sudo apt-get install -y gcc-11 g++-11; \
-		sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-11 200; \
-		sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-11 200; \
-	fi
-	@if ! command -v git-lfs >/dev/null 2>&1; then \
-		sudo apt install -y git-lfs; \
-	fi
 	@if [ "$$PACKAGE_MANAGER" = "uv" ]; then \
 		if ! command -v uv >/dev/null 2>&1; then \
 			curl -LsSf https://astral.sh/uv/install.sh | sh; \
-			source $$HOME/.cargo/env; \
 		fi; \
+		uv sync; \
 	fi
 	pip install --user --no-input gitman >/dev/null 2>&1 || true; \
 
@@ -40,9 +29,9 @@ gitman:
 	gitman update
 
 clean: clean-$(PACKAGE_MANAGER)
-	@if grep -Fxq "source $(ENV_BASH)" $(RC_FILE); then \
-		echo "[INFO] Removing .env.bash from $$( basename $(RC_FILE) )"
-		sed -i "\|source $(ENV_BASH)|d" $(RC_FILE); \
+	@if grep -Fq "source $(BASH_UTILS)" $(RC_FILE); then \
+		echo "[INFO] Removing $$( basename $(BASH_UTILS) ) from $$( basename $(RC_FILE) )"
+		sed -i "\|^.*source $(BASH_UTILS)|d" $(RC_FILE); \
 	fi;
 
 clean-conda:
@@ -65,62 +54,53 @@ setup: setup-$(PACKAGE_MANAGER)
 		read -p "W&B Username: " WANDB_USERNAME; \
 		read -p "W&B API Key: " WANDB_API_KEY; \
 		echo "[INFO] Writing wandb env file..."; \
-		WANDB_USERNAME=$$WANDB_USERNAME WANDB_API_KEY=$$WANDB_API_KEY envsubst < scripts/cluster/tools/.env.wandb.template > scripts/.env.wandb; \
+		WANDB_USERNAME=$$WANDB_USERNAME WANDB_API_KEY=$$WANDB_API_KEY envsubst < scripts/tools/.env.wandb.template > scripts/.env.wandb; \
 	fi;
-	@if ! grep -Fxq "source $(ENV_BASH)" $(RC_FILE); then \
-		echo "[INFO] Adding .env.bash to $$( basename $(RC_FILE) )"; \
-		echo "source $(ENV_BASH)" >> $(RC_FILE); \
+	@if ! grep -Fq "source $(BASH_UTILS)" $(RC_FILE); then \
+		echo "[INFO] Adding $$( basename $(BASH_UTILS) ) to $$( basename $(RC_FILE) )"; \
+		echo "PACKAGE_MANAGER=$(PACKAGE_MANAGER) VENV_NAME=$(VENV_NAME) source $(BASH_UTILS)" >> $(RC_FILE); \
+		echo -e "[INFO] Successfully added $$( basename $(BASH_UTILS) ) to $$( basename $(RC_FILE) )\n"; \
+		echo -e "\t\t1. For development in the main hcrl_isaaclab extension, run:	ilab"; \
+		echo -e "\t\t2. For manager use (e.g. cluster scripts), run:					manager"; \
+		echo -e "\n"; \
 	fi;
 
 setup-conda:
 	export CONDA_NO_PLUGINS=true; \
 	source $$HOME/miniconda3/etc/profile.d/conda.sh; \
-	cp scripts/isaacsim/setup_conda_env.sh resources/IsaacLab/_isaac_sim/setup_conda_env.sh; \
-	cp scripts/isaacsim/setup_python_env.sh resources/IsaacLab/_isaac_sim/setup_python_env.sh; \
-	cd resources/IsaacLab && ./isaaclab.sh -c $(VENV_NAME); \
-	conda run -n $(VENV_NAME) ./isaaclab.sh -i rsl_rl;
+	conda create -n $(VENV_NAME) python=3.11; \
+	conda activate $(VENV_NAME); \
+	pip install --upgrade pip; \
+	pip install "isaacsim[all,extscache]==5.1.0" --extra-index-url https://pypi.nvidia.com; \
+	pip install -U torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128; \
+	cd resources/IsaacLab; \
+	./isaaclab.sh -c $(VENV_NAME); \
+	./isaaclab.sh -i rsl_rl;
 
 setup-uv:
-	uv venv --clear --python $(PYTHON_PATH) resources/IsaacLab/$(VENV_NAME)
-	cat >> resources/IsaacLab/$(VENV_NAME)/bin/activate <<-'EOF'
-	if [[ "$${BASH_SOURCE[0]}" == /* ]]; then
-	    ACTIVATE_SCRIPT_PATH="$${BASH_SOURCE[0]}"
-	else
-	    ACTIVATE_SCRIPT_PATH="$$(pwd)/$${BASH_SOURCE[0]}"
-	fi
-	ACTIVATE_SCRIPT_DIR="$$(dirname "$$(readlink -f "$$ACTIVATE_SCRIPT_PATH")")"
-	ISAACLAB_ROOT="$$ACTIVATE_SCRIPT_DIR/../.."
-	ISAACLAB_ROOT="$$(readlink -f "$$ISAACLAB_ROOT")"
-	. "$$ISAACLAB_ROOT/_isaac_sim/setup_conda_env.sh"
-	export ISAACLAB_PATH="$$ISAACLAB_ROOT"
-	export CONDA_PREFIX="$$VIRTUAL_ENV"
-	EOF
-	cat > resources/IsaacLab/$(VENV_NAME)/bin/isaaclab <<-'EOF'
-	#!/usr/bin/env bash
-	set -e
-	if [[ "$$0" == /* ]]; then
-	    SCRIPT_PATH="$$0"
-	else
-	    SCRIPT_PATH="$$(pwd)/$$0"
-	fi
-	SCRIPT_DIR="$$(dirname "$$(readlink -f "$$SCRIPT_PATH")")"
-	ISAACLAB_SCRIPT="$$SCRIPT_DIR/../../isaaclab.sh"
-	ISAACLAB_SCRIPT="$$(readlink -f "$$ISAACLAB_SCRIPT")"
-	exec "$$ISAACLAB_SCRIPT" "$$@"
-	EOF
-	chmod +x resources/IsaacLab/$(VENV_NAME)/bin/isaaclab
-	source resources/IsaacLab/$(VENV_NAME)/bin/activate && \
-	hash -r && \
-	export CONDA_PREFIX="$$VIRTUAL_ENV" && \
-	uv pip install --upgrade pip && \
-	python -m pip install --upgrade pip && \
-	isaaclab -i rsl_rl;
+	uv venv --python 3.11 resources/IsaacLab/$(VENV_NAME); \
+	cd resources/IsaacLab && source $(VENV_NAME)/bin/activate; \
+	uv pip install --upgrade pip; \
+	uv pip install "isaacsim[all,extscache]==5.1.0" --extra-index-url https://pypi.nvidia.com; \
+	uv pip install -U torch==2.7.0 torchvision==0.22.0 --index-url https://download.pytorch.org/whl/cu128; \
+	./isaaclab.sh -u $(VENV_NAME); \
+	./isaaclab.sh -i rsl_rl;
 
 conda:
 	$(MAKE) PACKAGE_MANAGER=conda all
 
 uv:
 	$(MAKE) PACKAGE_MANAGER=uv all
+
+docker:
+	if ! command -v docker >/dev/null 2>&1; then \
+		curl -fsSL https://get.docker.com -o get-docker.sh; \
+		sudo sh get-docker.sh; \
+		sudo groupadd docker; \
+		sudo usermod -aG docker $$USER; \
+		newgrp docker; \
+	fi;
+	$(TOPDIR)/scripts/container.sh start;
 
 cluster:
 	@if [ ! -f "$(TOPDIR)/scripts/cluster/.env.cluster" ]; then \
@@ -137,15 +117,6 @@ cluster:
 		echo "[INFO] Writing SLURM job config file..."; \
 		EMAIL=$$EMAIL QUEUE="gpu-a100-small" NUM_PROCS=1 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh; \
 		EMAIL=$$EMAIL QUEUE="gpu-a100" NUM_PROCS=2 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_distributed_job_slurm.sh; \
-	fi;
-	if ! command -v docker >/dev/null 2>&1; then \
-		curl -fsSL https://get.docker.com -o get-docker.sh; \
-		sudo sh get-docker.sh; \
-		sudo groupadd docker; \
-		sudo usermode -aG docker $$USER; \
-		newgrp docker; \
-		echo "[INFO] Docker successfully installed and configured. Log out and back in for changes to take effect, then rerun `make cluster`."; \
-		exit 0; \
 	fi;
 	if ! command -v nvidia-container-toolkit >/dev/null 2>&1; then \
 		curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
@@ -166,5 +137,5 @@ cluster:
 		sudo apt update; \
 		sudo apt install -y apptainer; \
 	fi;
-	$(TOPDIR)/scripts/container.sh start;
+	$(MAKE) docker;
 	$(TOPDIR)/scripts/cluster.sh push;
