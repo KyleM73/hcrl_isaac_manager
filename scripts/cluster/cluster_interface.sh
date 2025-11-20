@@ -107,14 +107,13 @@ submit_job() {
 # Main
 #==
 
-#!/bin/bash
-
 help() {
     echo -e "\nusage: $(basename "$0") [-h] <command> [<profile>] [<job_args>...] -- Utility for interfacing between IsaacLab and compute clusters."
     echo -e "\noptions:"
     echo -e "  -h              Display this help message."
     echo -e "\ncommands:"
     echo -e "  push [<profile>]              Push the docker image to the cluster."
+    echo -e "  repush [<profile>]            Repush existing SIF image to the cluster."
     echo -e "  job [<profile>] [<job_args>]  Submit a job to the cluster."
     echo -e "\nwhere:"
     echo -e "  <profile>  is the optional container profile specification. Defaults to 'base'."
@@ -175,8 +174,6 @@ case $command in
         # clear old exports for selected profile
         rm -rf /$SCRIPT_DIR/exports/isaac-lab-$profile*
         # create singularity image
-        # NOTE: we create the singularity image as non-root user to allow for more flexibility. If this causes
-        # issues, remove the --fakeroot flag and open an issue on the IsaacLab repository.
         cd /$SCRIPT_DIR/exports
         APPTAINER_NOHTTPS=1 apptainer build --sandbox --fakeroot isaac-lab-$profile.sif docker-daemon://isaac-lab-$profile:latest
         # tar image (faster to send single file as opposed to directory with many files)
@@ -211,15 +208,8 @@ case $command in
         current_datetime=$(date +"%Y%m%d_%H%M%S")
         # Append current date and time to CLUSTER_ISAACLAB_DIR
         CLUSTER_ISAACLAB_DIR="${CLUSTER_ISAACLAB_DIR}_${current_datetime}"
-        # Check if singularity image exists on the remote host
-        # don't check to reduce number of ssh calls
-        # check_singularity_image_exists isaac-lab-$profile
-        echo "[INFO] Syncing Isaac Lab code..."
-        # make sure target directory exists
-        # ssh $CLUSTER_LOGIN "mkdir -p $CLUSTER_ISAACLAB_DIR"
-        # use mkpath flag in rsync instead, may not work on older systems
-        # use --rsync_path instead of --mkpath (rsync>=3.2.3 for mkpath)
         # Sync Isaac Lab code
+        echo "[INFO] Syncing Isaac Lab code..."
         rsync -rh --rsync-path="mkdir -p $CLUSTER_ISAACLAB_DIR && rsync" --exclude="*.git*" --filter=':- .dockerignore'  /$SCRIPT_DIR/../.. $CLUSTER_LOGIN:$CLUSTER_ISAACLAB_DIR
         # execute job script
         echo "[INFO] Executing job script..."
