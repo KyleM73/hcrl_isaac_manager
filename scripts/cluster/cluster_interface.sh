@@ -83,10 +83,6 @@ submit_job() {
         fi
     done
 
-    if $DISTRIBUTED; then
-        export CLUSTER_PYTHON_EXECUTABLE="$CLUSTER_PYTHON_DISTRIBUTED_EXECUTABLE"
-    fi
-
     case $CLUSTER_JOB_SCHEDULER in
         "SLURM")
             job_script_file=$( $DISTRIBUTED && echo "submit_distributed_job_slurm.sh" || echo "submit_job_slurm.sh" )
