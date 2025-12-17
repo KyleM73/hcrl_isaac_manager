@@ -21,6 +21,9 @@ init_commands:
   - rm -f /workspace/isaaclab/source/hcrl_isaaclab/resources/hcrl_robots &&
     mkdir -p /workspace/isaaclab/source/hcrl_isaaclab/resources &&
     ln -s /workspace/isaaclab/hcrl_robots /workspace/isaaclab/source/hcrl_isaaclab/resources/hcrl_robots
+  - rm -f /workspace/isaaclab/source/hcrl_isaaclab/resources/ssti_robots &&
+    mkdir -p /workspace/isaaclab/source/hcrl_isaaclab/resources &&
+    ln -s /workspace/isaaclab/ssti_robots /workspace/isaaclab/source/hcrl_isaaclab/resources/ssti_robots
 # python executable on the cluster
 "py_executable": "/workspace/isaaclab/isaaclab.sh -p"
 # patterns to exclude when copying dependencies (file_mounts) and working directory (ext_dir)
