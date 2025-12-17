@@ -21,7 +21,7 @@ sources:
       type: git
     - repo: git@github.com:Creampelt/hcrl_crab_robot.git
       name: IsaacLab/source/hcrl_isaaclab/resources/ssti_robots
-      rev: feature/realistic-crab
+      rev: main
       type: git
       scripts:
         - git lfs install
