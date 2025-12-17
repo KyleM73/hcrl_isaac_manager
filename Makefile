@@ -115,8 +115,8 @@ cluster:
 	@if [ ! -f "$(TOPDIR)/scripts/cluster/submit_job_slurm.sh" || ! -f "$(TOPDIR)/scripts/cluster/submit_distributed_job_slurm.sh" ]; then \
 		read -p "Email (for job notifications): " EMAIL; \
 		echo "[INFO] Writing SLURM job config file..."; \
-		EMAIL=$$EMAIL QUEUE="gpu-a100-small" NUM_PROCS=1 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh; \
-		EMAIL=$$EMAIL QUEUE="gpu-a100" NUM_PROCS=2 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_distributed_job_slurm.sh; \
+		EMAIL=$$EMAIL QUEUE="gpu-a100-small" NUM_PROCS=1 NUM_CPUS=32 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh; \
+		EMAIL=$$EMAIL QUEUE="gpu-a100" NUM_PROCS=2 NUM_CPUS=64 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_distributed_job_slurm.sh; \
 	fi;
 	if ! command -v nvidia-container-toolkit >/dev/null 2>&1; then \
 		curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
