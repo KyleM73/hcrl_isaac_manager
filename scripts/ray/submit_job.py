@@ -163,7 +163,7 @@ def parse_job_config(cfg_file: str) -> tuple[dict, dict, dict]:
         file_mounts = "{}"
     else:
         file_mounts = json.dumps({k.split("/")[-1]: v for k, v in job_config["file_mounts"].items()})
-    run_start_commands = json.dumps(job_config.get("run_start_commands", []))
+    init_commands = json.dumps(job_config.get("init_commands", []))
     runtime_env = {
         "working_dir": working_dir,
         "env_vars": env_dict,
@@ -175,7 +175,7 @@ def parse_job_config(cfg_file: str) -> tuple[dict, dict, dict]:
     other_data = {
         "python_script": job_config["python_script"],
         "file_mounts": file_mounts.replace('"', '\\"'),
-        "run_start_commands": run_start_commands.replace('\\"', '"').replace('"', '\\"'),
+        "init_commands": init_commands.replace('\\"', '"').replace('"', '\\"'),
     }
     return runtime_env, metadata, other_data
 
