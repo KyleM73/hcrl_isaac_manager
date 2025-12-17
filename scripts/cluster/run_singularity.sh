@@ -1,6 +1,18 @@
 #!/usr/bin/env bash
 
-echo "(run_singularity.py): Called on compute node from current isaaclab directory $1 with container profile $2 and arguments ${@:3}"
+for arg in ${@:3}; do
+    if [[ "$arg" == "--distributed" ]]; then
+        export CLUSTER_PYTHON_EXECUTABLE="$CLUSTER_PYTHON_DISTRIBUTED_EXECUTABLE"
+        echo "(run_singularity.py): Running distributed job"
+        break
+    fi
+done
+
+echo -e "(run_singularity.py): Called on compute node:\n"
+echo -e "\t\tCurrent isaaclab directory: $1\n"
+echo -e "\t\tContainer profile: $2\n"
+echo -e "\t\tPython executable: $CLUSTER_PYTHON_EXECUTABLE ${@:3}\n"
+
 
 #==
 # Helper functions
@@ -73,7 +85,7 @@ apptainer exec \
     -B $JOB_TMPDIR/$dir_name:/workspace/isaaclab:rw \
     -B $CLUSTER_ISAACLAB_DIR/logs:/workspace/isaaclab/logs:rw \
     --nv --writable-tmpfs --containall $JOB_TMPDIR/$2.sif \
-    bash -c "export ISAACLAB_PATH=/workspace/isaaclab && export WANDB_USERNAME=$WANDB_USERNAME && export WANDB_API_KEY=$WANDB_API_KEY && cd /workspace/isaaclab && /isaac-sim/python.sh ${CLUSTER_PYTHON_EXECUTABLE} ${@:3}"
+    bash -c "export OMP_NUM_THREADS=$OMP_NUM_THREADS && export ISAACLAB_PATH=/workspace/isaaclab && export WANDB_USERNAME=$WANDB_USERNAME && export WANDB_API_KEY=$WANDB_API_KEY && cd /workspace/isaaclab && /isaac-sim/python.sh ${CLUSTER_PYTHON_EXECUTABLE} ${@:3}"
 
 EXIT_CODE=$?
 
