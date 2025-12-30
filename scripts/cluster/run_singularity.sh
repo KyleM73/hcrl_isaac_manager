@@ -8,10 +8,10 @@ for arg in ${@:3}; do
     fi
 done
 
-echo -e "(run_singularity.py): Called on compute node:\n"
-echo -e "\t\tCurrent isaaclab directory: $1\n"
-echo -e "\t\tContainer profile: $2\n"
-echo -e "\t\tPython executable: $CLUSTER_PYTHON_EXECUTABLE ${@:3}\n"
+echo -e "(run_singularity.py): Called on compute node:"
+echo -e "\tCurrent isaaclab directory: $1"
+echo -e "\tContainer profile: $2"
+echo -e "\tPython executable: $CLUSTER_PYTHON_EXECUTABLE ${@:3}"
 
 
 #==
