@@ -9,15 +9,21 @@ sources:
    # repos linked in IsaacLab
     - repo: git@github.com:KyleM73/hcrl_isaaclab.git
       name: IsaacLab/source/hcrl_isaaclab
-      rev: main
+      rev: feat/fb-cpr
       type: git
     - repo: git@github.com:KyleM73/hcrl_robots.git
       name: IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots
       rev: main
       type: git
+    - repo: https://huggingface.co/datasets/lvhaidong/LAFAN1_Retargeting_Dataset
+      name: IsaacLab/source/hcrl_isaaclab/resources/lafan1
+      rev: main
+      type: git
+      scripts:
+        - git lfs install && git lfs pull
     - repo: git@github.com:KyleM73/robot_rl.git
       name: IsaacLab/source/robot_rl
-      rev: main
+      rev: feat/fb-cpr
       type: git
     - repo: git@github.com:KyleM73/cusadi.git
       name: IsaacLab/source/cusadi
