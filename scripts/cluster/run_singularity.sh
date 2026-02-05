@@ -54,6 +54,7 @@ source $SCRIPT_DIR/../.env.base
 
 # make sure that all directories exists in cache directory
 mkdir "$JOB_TMPDIR"
+mkdir "$JOB_TMPDIR/isaac-tmp"
 setup_directories
 # copy all cache files
 cp -r $CLUSTER_ISAAC_SIM_CACHE_DIR $JOB_TMPDIR
@@ -83,6 +84,7 @@ apptainer exec \
     -B $JOB_TMPDIR/docker-isaac-sim/data:${DOCKER_USER_HOME}/.local/share/ov/data:rw \
     -B $JOB_TMPDIR/docker-isaac-sim/documents:${DOCKER_USER_HOME}/Documents:rw \
     -B $JOB_TMPDIR/$dir_name:/workspace/isaaclab:rw \
+    -B $JOB_TMPDIR/isaac-tmp:/tmp:rw \
     -B $CLUSTER_ISAACLAB_DIR/logs:/workspace/isaaclab/logs:rw \
     --nv --writable-tmpfs --containall $JOB_TMPDIR/$2.sif \
     bash -c "export OMP_NUM_THREADS=$OMP_NUM_THREADS && export ISAACLAB_PATH=/workspace/isaaclab && export WANDB_USERNAME=$WANDB_USERNAME && export WANDB_API_KEY=$WANDB_API_KEY && cd /workspace/isaaclab && /isaac-sim/python.sh ${CLUSTER_PYTHON_EXECUTABLE} ${@:3}"

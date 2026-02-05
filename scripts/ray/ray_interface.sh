@@ -108,7 +108,7 @@ case $command in
         stop_args="$@"
         source $SCRIPT_DIR/.env.ray
         if python $SCRIPT_DIR/list_jobs.py --user_id $UT_EID --check_id $job_id; then
-            ray job stop --address http://100.79.16.15:8265 $job_id $stop_args
+            ray job stop --address http://100.95.64.90:8265 $job_id $stop_args
         else
             echo "[ERROR] The specified job $job_id cannot be stopped."
             echo "[ERROR] Only running jobs started by you can be cancelled."
@@ -127,7 +127,7 @@ case $command in
         logs_args="$@"
         source $SCRIPT_DIR/.env.ray
         if python $SCRIPT_DIR/list_jobs.py --user_id $UT_EID --all_statuses --check_id $job_id; then
-            ray job logs --address http://100.79.16.15:8265 $job_id $logs_args
+            ray job logs --address http://100.95.64.90:8265 $job_id $logs_args
         else
             echo "[ERROR] The specified job $job_id cannot be stopped."
             echo "[ERROR] You may only view the logs of jobs started by you."

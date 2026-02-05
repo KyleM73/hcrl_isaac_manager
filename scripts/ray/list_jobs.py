@@ -7,7 +7,7 @@ from rich.table import Table
 from ray.job_submission import JobSubmissionClient, JobDetails, JobStatus
 
 parser = argparse.ArgumentParser(description="List jobs on the Ray cluster")
-parser.add_argument("--address", type=str, default="http://100.79.16.15:8265", help="Address to the cluster head.")
+parser.add_argument("--address", type=str, default="http://100.95.64.90:8265", help="Address to the cluster head.")
 parser.add_argument(
     "--all_users", action="store_true", help="Enable this flag to view jobs from all users, not just your own."
 )
