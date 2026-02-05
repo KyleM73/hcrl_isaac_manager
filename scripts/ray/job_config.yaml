@@ -28,8 +28,9 @@ init_commands:
 "py_executable": "/workspace/isaaclab/isaaclab.sh -p"
 # patterns to exclude when copying dependencies (file_mounts) and working directory (ext_dir)
 "excludes":
-  - "**/resources/*_robots"
+  - "**/resources/**"
   - "**/wandb/**"
   - "**/logs/**"
   - "**/.git/objects/**"
   - "**/.venv/**"
+  - "nohup.out"
