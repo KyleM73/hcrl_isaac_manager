@@ -21,6 +21,10 @@ sources:
       type: git
       scripts:
         - git lfs install && git lfs pull
+    - repo: git@github.com:Creampelt/lafan1_g1.git
+      name: IsaacLab/source/hcrl_isaaclab/resources/lafan1_g1
+      rev: main
+      type: git
     - repo: git@github.com:KyleM73/robot_rl.git
       name: IsaacLab/source/robot_rl
       rev: feat/fb-cpr
