@@ -105,19 +105,7 @@ def submit_job(cluster: dict, job_command: str, runtime_env: dict, metadata: dic
         print(f"[INFO] Attempting entrypoint {entrypoint=} in cluster {cluster}")
         job_id = client.submit_job(entrypoint=entrypoint, runtime_env=runtime_env, metadata=metadata)
 
-        print(
-            f"[INFO] Submitted job with ID {job_id}. Waiting for logs. You can exit and allow job to finish asynchronously with Ctrl-C."
-        )
-        status = client.get_job_status(job_id)
-        while status in [job_submission.JobStatus.PENDING, job_submission.JobStatus.RUNNING]:
-            time.sleep(5)
-            status = client.get_job_status(job_id)
-
-        final_logs = client.get_job_logs(job_id)
-        print("----------------------------------------------------")
-        print(f"[INFO] Cluster {cluster_name} Logs: \n")
-        print(final_logs)
-        print("----------------------------------------------------")
+        print(f"[INFO] Submitted job with ID {job_id}.")
     except Exception as e:
         print(traceback.format_exc())
         raise e

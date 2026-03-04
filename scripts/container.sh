@@ -4,6 +4,7 @@
 cd "$(dirname "$0")"
 # mark hcrl git directories as safe
 git config --global --add safe.directory ../resources/IsaacLab/source/hcrl_isaaclab/
+git config --global --add safe.directory ../resources/IsaacLab/source/robot_rl/
 # export wandb api keys
 wandb_env_file="$(pwd)/.env.wandb"
 dockerfile="$(pwd)/cluster/Dockerfile.base"
@@ -12,8 +13,9 @@ if ! grep -Fxq -f "$wandb_env_file" "$target_env_file"; then
     cat "$wandb_env_file" >> "$target_env_file"
 fi
 cp $dockerfile ../resources/IsaacLab/docker/Dockerfile.base
-# take git ownership of the hcrl extension
+# take git ownership of the hcrl extensions
 sudo chown -R "${USER:-$(id -un)}" ../resources/IsaacLab/source/hcrl_isaaclab/
+sudo chown -R "${USER:-$(id -un)}" ../resources/IsaacLab/source/robot_rl/
 # turn off x11 mode
 ssh_mode='"0"'
 sed -i "s/^x11_forwarding_enabled.*/x11_forwarding_enabled: ${ssh_mode}/" ../resources/IsaacLab/docker/.container.cfg
