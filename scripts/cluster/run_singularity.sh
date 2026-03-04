@@ -1,13 +1,5 @@
 #!/usr/bin/env bash
 
-for arg in ${@:3}; do
-    if [[ "$arg" == "--distributed" ]]; then
-        export CLUSTER_PYTHON_EXECUTABLE="$CLUSTER_PYTHON_DISTRIBUTED_EXECUTABLE"
-        echo "(run_singularity.py): Running distributed job"
-        break
-    fi
-done
-
 echo -e "(run_singularity.py): Called on compute node:"
 echo -e "\tCurrent isaaclab directory: $1"
 echo -e "\tContainer profile: $2"
@@ -28,7 +20,8 @@ setup_directories() {
         "${CLUSTER_ISAAC_SIM_CACHE_DIR}/cache/computecache" \
         "${CLUSTER_ISAAC_SIM_CACHE_DIR}/logs" \
         "${CLUSTER_ISAAC_SIM_CACHE_DIR}/data" \
-        "${CLUSTER_ISAAC_SIM_CACHE_DIR}/documents"; do
+        "${CLUSTER_ISAAC_SIM_CACHE_DIR}/documents" \
+        "${JOB_TMPDIR}/tmp"; do
         if [ ! -d "$dir" ]; then
             mkdir -p "$dir"
             echo "(run_singularity.py): Created directory: $dir"
@@ -54,7 +47,7 @@ source $SCRIPT_DIR/../.env.base
 
 # make sure that all directories exists in cache directory
 mkdir "$JOB_TMPDIR"
-mkdir "$JOB_TMPDIR/isaac-tmp"
+echo "(run_singularity.py): Created directory: $JOB_TMPDIR"
 setup_directories
 # copy all cache files
 cp -r $CLUSTER_ISAAC_SIM_CACHE_DIR $JOB_TMPDIR
@@ -65,11 +58,13 @@ touch "$CLUSTER_ISAACLAB_DIR/logs/.keep"
 
 # copy the temporary isaaclab directory with the latest changes to the compute node
 cp -r $1 $JOB_TMPDIR
+echo "(run_singularity.py) Copied $1 to $JOB_TMPDIR"
 # Get the directory name
 dir_name=$(basename "$1")
 
 # copy container to the compute node
-tar -xf $CLUSTER_SIF_PATH/$2.tar -C $JOB_TMPDIR
+tar -xf $CLUSTER_SIF_PATH/$2.tar -C $JOB_TMPDIR || { echo "(run_singularity.py) Tar extraction failed!"; exit 1; }
+echo "(run_singularity.py) Extracted $CLUSTER_SIF_PATH/$2.tar at $JOB_TMPDIR"
 
 # execute command in singularity container
 # NOTE: ISAACLAB_PATH is normally set in `isaaclab.sh` but we directly call the isaac-sim python because we sync the entire
@@ -84,9 +79,9 @@ apptainer exec \
     -B $JOB_TMPDIR/docker-isaac-sim/data:${DOCKER_USER_HOME}/.local/share/ov/data:rw \
     -B $JOB_TMPDIR/docker-isaac-sim/documents:${DOCKER_USER_HOME}/Documents:rw \
     -B $JOB_TMPDIR/$dir_name:/workspace/isaaclab:rw \
-    -B $JOB_TMPDIR/isaac-tmp:/tmp:rw \
+    -B $JOB_TMPDIR/tmp:/tmp:rw \
     -B $CLUSTER_ISAACLAB_DIR/logs:/workspace/isaaclab/logs:rw \
-    --nv --writable-tmpfs --containall $JOB_TMPDIR/$2.sif \
+    --nv --writable --containall --no-home $JOB_TMPDIR/$2.sif \
     bash -c "export OMP_NUM_THREADS=$OMP_NUM_THREADS && export ISAACLAB_PATH=/workspace/isaaclab && export WANDB_USERNAME=$WANDB_USERNAME && export WANDB_API_KEY=$WANDB_API_KEY && cd /workspace/isaaclab && /isaac-sim/python.sh ${CLUSTER_PYTHON_EXECUTABLE} ${@:3}"
 
 EXIT_CODE=$?
