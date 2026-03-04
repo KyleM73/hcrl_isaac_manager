@@ -10,7 +10,7 @@ RC_FILE ?= $$HOME/.bashrc
 TOPDIR := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 BASH_UTILS := $(TOPDIR)/scripts/utils.sh
 
-.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv docker cluster
+.PHONY: all deps gitman clean setup setup-conda setup-uv clean-conda clean-uv docker cluster add-cluster
 
 all: deps gitman clean setup
 
@@ -103,20 +103,9 @@ docker:
 	$(TOPDIR)/scripts/container.sh start;
 
 cluster:
-	@if [ ! -f "$(TOPDIR)/scripts/cluster/.env.cluster" ]; then \
-		read -p "TACC Username: " CLUSTER_USERNAME; \
-		read -p "Home Directory (`echo '$$HOME'` from TACC machine): " HOME; \
-		read -p "Scratch Directory (`echo '$$SCRATCH'` from TACC machine): " SCRATCH; \
-		case "$$HOME" in /*) ;; *) HOME="/$$HOME" ;; esac; \
-		case "$$SCRATCH" in /*) ;; *) SCRATCH="/$$SCRATCH" ;; esac; \
-		echo "[INFO] Writing cluster env file..."; \
-		HOME=$$HOME SCRATCH=$$SCRATCH CLUSTER_USERNAME=$$CLUSTER_USERNAME envsubst < scripts/cluster/tools/.env.cluster.template > scripts/cluster/.env.cluster; \
-	fi;
-	@if [ ! -f "$(TOPDIR)/scripts/cluster/submit_job_slurm.sh" || ! -f "$(TOPDIR)/scripts/cluster/submit_distributed_job_slurm.sh" ]; then \
-		read -p "Email (for job notifications): " EMAIL; \
-		echo "[INFO] Writing SLURM job config file..."; \
-		EMAIL=$$EMAIL QUEUE="gpu-a100-small" NUM_PROCS=1 NUM_CPUS=32 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_job_slurm.sh; \
-		EMAIL=$$EMAIL QUEUE="gpu-a100" NUM_PROCS=2 NUM_CPUS=64 envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > scripts/cluster/submit_distributed_job_slurm.sh; \
+	@if [ -z "$(CLUSTER)" ]; then \
+		echo "[ERROR] CLUSTER is not set. Usage: CLUSTER=<value> make cluster"; \
+		exit 1; \
 	fi;
 	if ! command -v nvidia-container-toolkit >/dev/null 2>&1; then \
 		curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg \
@@ -138,4 +127,26 @@ cluster:
 		sudo apt install -y apptainer; \
 	fi;
 	$(MAKE) docker;
-	$(TOPDIR)/scripts/cluster.sh push;
+	CLUSTER=$(CLUSTER) $(TOPDIR)/scripts/cluster.sh push;
+
+add-cluster:
+	@read -p "Cluster Nickname: " CLUSTER_NAME; \
+	OUTDIR="$(TOPDIR)/scripts/cluster/$${CLUSTER_NAME}_config"; \
+	if [ -d $$OUTDIR ]; then \
+		echo "[ERROR] Cluster config with nickname $$CLUSTER_NAME already exists. Delete it, edit it directly, or pick a different name."; \
+		exit 1; \
+	fi; \
+	read -p "Cluster Login (username@address): " CLUSTER_LOGIN; \
+	read -p "Home Directory (`echo '$$HOME'` from cluster machine): " HOME; \
+	read -p "Scratch Directory (`echo '$$SCRATCH'` from cluster machine): " SCRATCH; \
+	read -p "Email (for job notifications): " EMAIL; \
+	read -p "Queue Name: " QUEUE; \
+	read -p "GPUs per Node: " NUM_PROCS; \
+	read -p "CPUs per Task/GPU: " NUM_CPUS; \
+	case "$$HOME" in /*) ;; *) HOME="/$$HOME" ;; esac; \
+	case "$$SCRATCH" in /*) ;; *) SCRATCH="/$$SCRATCH" ;; esac; \
+	mkdir $$OUTDIR; \
+	echo "[INFO] Writing cluster env file..."; \
+	HOME=$$HOME SCRATCH=$$SCRATCH CLUSTER_LOGIN=$$CLUSTER_LOGIN NUM_PROCS=$$NUM_PROCS NUM_CPUS=$$NUM_CPUS envsubst < scripts/cluster/tools/.env.cluster.template > $$OUTDIR/.env.cluster; \
+	echo "[INFO] Writing SLURM job config file..."; \
+	EMAIL=$$EMAIL QUEUE=$$QUEUE NUM_PROCS=$$NUM_PROCS NUM_CPUS=$$NUM_CPUS envsubst < scripts/cluster/tools/submit_job_slurm.template.sh > $$OUTDIR/submit_job_slurm.sh;

@@ -72,20 +72,10 @@ check_singularity_image_exists() {
 }
 
 submit_job() {
-
     echo "[INFO] Arguments passed to job script ${@}"
-
-    DISTRIBUTED=false
-    for arg in "$@"; do
-        if [[ "$arg" == "--distributed" ]]; then
-            DISTRIBUTED=true
-            break
-        fi
-    done
-
     case $CLUSTER_JOB_SCHEDULER in
         "SLURM")
-            job_script_file=$( $DISTRIBUTED && echo "submit_distributed_job_slurm.sh" || echo "submit_job_slurm.sh" )
+            job_script_file=submit_job_slurm.sh
             ;;
         "PBS")
             job_script_file=submit_job_pbs.sh
@@ -95,7 +85,6 @@ submit_job() {
             exit 1
             ;;
     esac
-
     ssh $CLUSTER_LOGIN "cd $CLUSTER_ISAACLAB_DIR && bash $CLUSTER_ISAACLAB_DIR/docker/cluster/$job_script_file \"$CLUSTER_ISAACLAB_DIR\" \"isaac-lab-$profile\" ${@}"
 }
 
