@@ -10,6 +10,9 @@ RUN apt-get update && apt-get install -y openssh-client
 # install rsync
 RUN apt-get update && apt-get install -y rsync && rm -rf /var/lib/apt/lists/*
 
+# Install other dependencies
+RUN apt-get update && apt-get install -y graphviz
+
 # Set NVIDIA paths
 ENV PATH="/usr/local/nvidia/bin:$PATH"
 ENV LD_LIBRARY_PATH="/usr/local/nvidia/lib64"
