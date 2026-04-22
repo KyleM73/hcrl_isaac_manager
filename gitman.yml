@@ -9,19 +9,19 @@ sources:
    # repos linked in IsaacLab
     - repo: git@github.com:KyleM73/hcrl_isaaclab.git
       name: IsaacLab/source/hcrl_isaaclab
-      rev: ssti
+      rev: ssti-hrl-discrete
       type: git
     - repo: git@github.com:KyleM73/hcrl_robots.git
       name: IsaacLab/source/hcrl_isaaclab/resources/hcrl_robots
       rev: main
       type: git
-    - repo: git@github.com:KyleM73/robot_rl.git
+    - repo: git@github.com:mis0butter/robot_rl.git
       name: IsaacLab/source/robot_rl
-      rev: main
+      rev: actor-critic-categorical
       type: git
     - repo: git@github.com:Creampelt/hcrl_crab_robot.git
       name: IsaacLab/source/hcrl_isaaclab/resources/ssti_robots
-      rev: feature/realistic-crab
+      rev: realistic-spacecraft
       type: git
       scripts:
         - git lfs install
